@@ -1,5 +1,5 @@
 # RaspberryPi Reservation System
-System to handle reservation for confrence room meetings, seminars, trainings an the likes. Handles reservations from Raspberry card input.
+System to handle reservation for confrence room meetings, seminars, trainings and the likes. Handles reservations from Raspberry card input.
 
 # TODO:
 Baza danych (proste - MySQL, średnie - PostgreSQL, ambitne - MongoDB)
