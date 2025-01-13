@@ -2,7 +2,7 @@
 System to handle reservation for confrence room meetings, seminars, trainings and the likes. Handles reservations from Raspberry card input.
 
 # TODO:
-Baza danych (proste - MySQL, średnie - PostgreSQL, ambitne - MongoDB)
+Baza danych (proste - MySQL, średnie - PostgreSQL, ambitne - MongoDB)(raczej SQLite)
 ### GUI:
 - menu
 - author info
