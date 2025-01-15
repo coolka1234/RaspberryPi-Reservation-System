@@ -7,7 +7,7 @@ Baza danych (proste - MySQL, średnie - PostgreSQL, ambitne - MongoDB)(raczej SQ
 - menu
 - author info
 - Raport (ile zajętych, do kiedy itp), najlepiej w postaci tabów
-- Kreator layoutu sal do rezerwacji (ile miejsc, siedzących, stojących, czy jest rzutnik itp)\
+- Kreator layoutu sal do rezerwacji (ile miejsc, siedzących, stojących, czy jest rzutnik itp)
 ### Backend:
 - broker z Pi
 - Translacja na input do GUI
