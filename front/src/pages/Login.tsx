@@ -1,5 +1,5 @@
-import { LoginBox } from "../components/LoginBox";
-import { Logo } from "../components/Logo";
+import { LoginBox } from "../components/LoginBox/LoginBox";
+import { Logo } from "../components/Logo/Logo";
 
 function Login() {
   return (

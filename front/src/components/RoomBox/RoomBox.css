@@ -1,0 +1,18 @@
+.room-box {
+  height: 8em;
+  width: 8em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  cursor: pointer;
+}
+
+.room-box-free {
+  background-color: #333;
+}
+
+.room-box-taken {
+  background-color: orange;
+}
