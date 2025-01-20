@@ -20,6 +20,7 @@ is_executing = True
 
 default_terminal_id = "T0"
 default_broker = "localhost"
+ROOM_ID="10.108.33.125"
 mqtt_client = mqtt.Client()
 
 def handle_button_press(channel):
@@ -54,14 +55,15 @@ def read_rfid():
                     card_uid = sum(uid[i] << (i * 8) for i in range(len(uid)))
                     print(f"Karta: {card_uid}")
                     print(f"DATETIME: {scan_time}")
+                    print(f"Room ID: {default_terminal_id}")
                     # jedyna zmiana - może ułatwi insercję do bazy
-                    notify_worker(card_uid, datetime.timestamp(scan_time))
+                    notify_worker(card_uid, datetime.timestamp(scan_time), ROOM_ID)
                     activate_buzzer()
                     blink_led()
                     last_scan_time = datetime.timestamp(datetime.now())
 
-def notify_worker(worker_id, scan_time):
-    mqtt_client.publish("worker/card", f"{worker_id} - {scan_time}")
+def notify_worker(worker_id, scan_time, room_id):
+    mqtt_client.publish("worker/card", f"{worker_id} - {scan_time} - {room_id}")
 
 def disconnect_from_mqtt_broker():
     notify_worker("klient rozlaczony", datetime.now())
