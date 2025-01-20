@@ -1,3 +1,9 @@
+
+###############################################################################
+########                TO JEST NA PC                               ###########
+###############################################################################
+
+from sqlite3.dbapi2 import Timestamp
 import paho.mqtt.client as mqtt
 import sqlite3
 import time
@@ -14,9 +20,9 @@ def process_message(client, userdata, message):
     if msg_text != "podlaczano klienta:" and msg_text != "klient rozlaczony":
         print(f"{time.ctime()} : {msg_text} used the RFID card.")
 
-        connection = sqlite3.connect("cards.db")
+        connection = sqlite3.connect("database.db")
         cursor = connection.cursor()
-        cursor.execute("INSERT INTO cards_log VALUES (?,?,?)", (time.ctime(), msg_text, msg_time))
+        cursor.execute("INSERT INTO cards_reads VALUES (?,?)", (msg_time, msg_text))
         connection.commit()
         connection.close()
     else:

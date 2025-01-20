@@ -2,6 +2,10 @@
 
 # pylint: disable=no-member
 
+###############################################################################
+########                TO JEST NA RASPBERRY PI                     ###########
+###############################################################################
+
 import time
 from tkinter.tix import DirTree
 import RPi.GPIO as GPIO
@@ -50,7 +54,8 @@ def read_rfid():
                     card_uid = sum(uid[i] << (i * 8) for i in range(len(uid)))
                     print(f"Karta: {card_uid}")
                     print(f"DATETIME: {scan_time}")
-                    notify_worker(card_uid, scan_time)
+                    # jedyna zmiana - może ułatwi insercję do bazy
+                    notify_worker(card_uid, datetime.timestamp(scan_time))
                     activate_buzzer()
                     blink_led()
                     last_scan_time = datetime.timestamp(datetime.now())
