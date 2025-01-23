@@ -36,6 +36,8 @@ class RoomResource(Resource):
     def put(self):
         """Update an existing room."""
         data = request.get_json()
+        print("Received data:", data)  # Print the received data for debugging
+
         room_id = data.get("id")
         updated_fields = {
             key: data[key]
@@ -48,6 +50,7 @@ class RoomResource(Resource):
 
         update_room(room_id, **updated_fields)
         return {"message": "Room updated successfully."}, 200
+
 
     def delete(self):
         """Delete a room by ID."""

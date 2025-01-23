@@ -46,34 +46,53 @@ class RoomResource(Resource):
     @room_ns.doc("create_room")
     def post(self):
         """Create a new room."""
-        data = request.json
-        create_room(
-            number=data["number"],
-            equipment=data["equipment"],
-            capacity=data["capacity"]
-        )
+        data = request.get_json()
+        number = data.get("number")
+        equipment = data.get("equipment")
+        capacity = data.get("capacity")
+
+        if not (number and equipment and capacity):
+            return {"error": "Missing required fields."}, 400
+
+        create_room(number, equipment, capacity)
         return {"message": "Room created successfully."}, 201
 
     @room_ns.expect(room_model)
     @room_ns.doc("update_room")
     def put(self):
-        """Update an existing room."""
-        data = request.json
+        data = request.get_json()
+        print("Received data:", data)  # Print the received data for debugging
+
         room_id = data.get("id")
-        if not room_id:
-            return {"error": "Room ID is required."}, 400
-        update_room(room_id, data)
+        updated_fields = {
+            key: data[key]
+            for key in ["number", "equipment", "capacity", "is_active"]
+            if key in data
+        }
+
+        if not room_id or not updated_fields:
+            return {"error": "Missing room ID or fields to update."}, 400
+
+        update_room(room_id, **updated_fields)
         return {"message": "Room updated successfully."}, 200
 
-    @room_ns.doc("delete_room")
-    def delete(self):
-        """Delete a room by ID."""
-        data = request.json
-        room_id = data.get("id")
-        if not room_id:
-            return {"error": "Room ID is required."}, 400
-        delete_room(room_id)
-        return {"message": "Room deleted successfully."}, 200
+
+
+
+    @room_ns.route('/<int:id>')  # Use <int:id> to capture the ID from the URL
+    @room_ns.doc("delete_room")  # Swagger doc for this route
+    @room_ns.param('id', 'The Room ID to delete', type=int)  # Document the id parameter in Swagger
+    class ReservationDeleteResource(Resource):
+        def delete(self, id):
+            """Delete a reservation by ID."""
+            try:
+                # Call your delete_reservation function with the ID
+                delete_room(id)
+                return {"message": f"Room {id} deleted successfully."}, 200
+            except Exception as e:
+                return {"error": f"Error deleting room: {str(e)}"}, 500
+      
+
 
 # CRUD operations for reservations
 @reservation_ns.route("/")
@@ -107,16 +126,21 @@ class ReservationResource(Resource):
             return {"error": "Reservation ID is required."}, 400
         update_reservation(reservation_id, data)
         return {"message": "Reservation updated successfully."}, 200
-
-    @reservation_ns.doc("delete_reservation")
-    def delete(self):
+    
+@reservation_ns.route('/<int:id>')  # Use <int:id> to capture the ID from the URL
+@reservation_ns.doc("delete_reservation")  # Swagger doc for this route
+@reservation_ns.param('id', 'The Reservation ID to delete', type=int)  # Document the id parameter in Swagger
+class ReservationDeleteResource(Resource):
+    def delete(self, id):
         """Delete a reservation by ID."""
-        data = request.json
-        reservation_id = data.get("id")
-        if not reservation_id:
-            return {"error": "Reservation ID is required."}, 400
-        delete_reservation(reservation_id)
-        return {"message": "Reservation deleted successfully."}, 200
+        try:
+            # Call your delete_reservation function with the ID
+            delete_reservation(id)
+            return {"message": f"Reservation {id} deleted successfully."}, 200
+        except Exception as e:
+            return {"error": f"Error deleting reservation: {str(e)}"}, 500
+      
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,7 +1,7 @@
 from datetime import timedelta
 from math import e
 from sqlalchemy import Boolean, ForeignKey, MetaData, create_engine, Table, Integer, Column, String, DateTime, table
-
+from datetime import datetime
 metadata = MetaData()
 engine = create_engine('sqlite:///database.db', echo=True)
 
@@ -93,6 +93,8 @@ def handle_card_read(card_id, read_time, room_id):
 def create_reservation(fk_user, fk_room, start_date, end_date):
     """Utwórz rezerwację"""
     connection = engine.connect()
+    start_date = datetime.fromisoformat(start_date)
+    end_date = datetime.fromisoformat(end_date)
     connection.execute(table_reservation.insert()
                        .values(fk_user=fk_user, fk_room=fk_room, start_date=start_date, end_date=end_date))
     connection.commit()
@@ -111,14 +113,20 @@ def get_reservations():
     connection = engine.connect()
     result = connection.execute(table_reservation.select()).fetchall()
     connection.close()
-    return result
+    columns = [column.name for column in table_room.columns] 
+    reservations = [dict(zip(columns, row)) for row in result]
+    return reservations
 
 def get_rooms():
     """Pobierz wszystkie pokoje"""
-    connection = engine.connect()
-    result = connection.execute(table_room.select()).fetchall()
+    connection=engine.connect()
+    result=connection.execute(table_room.select()).fetchall()
+    print(type(result))  # Check what type result is
+    print(result)     
     connection.close()
-    return result
+    columns = [column.name for column in table_room.columns] 
+    rooms = [dict(zip(columns, row)) for row in result]
+    return rooms
 
 def create_user(login, password, name, surname, uid):
     """Utwórz użytkownika"""
@@ -128,12 +136,32 @@ def create_user(login, password, name, surname, uid):
     connection.commit()
     connection.close()
 
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import SQLAlchemyError
+
+# Set up the session maker (typically done at the start of the app)
+Session = sessionmaker(bind=engine)
+
 def delete_room(room_id):
     """Usuń pokój"""
     connection = engine.connect()
-    connection.execute(table_room.delete().where(table_room.c.id == room_id))
-    connection.commit()
-    connection.close()
+    try:
+        # Execute the delete query
+        result = connection.execute(table_room.delete().where(table_room.c.id == room_id))
+        
+        if result.rowcount == 0:
+            # If no rows were deleted, the room doesn't exist
+            return {"error": "Room not found."}, 404
+        
+        connection.commit()  # Commit the deletion
+        return {"message": "Room deleted successfully."}, 200
+
+    except SQLAlchemyError as e:
+        connection.rollback()  # Rollback in case of error
+        return {"error": str(e)}, 500
+
+    finally:
+        connection.close()  # Ensure connection is closed
 
 def delete_reservation(reservation_id):
     """Usuń rezerwację"""
@@ -141,23 +169,42 @@ def delete_reservation(reservation_id):
     connection.execute(table_reservation.delete().where(table_reservation.c.id == reservation_id))
     connection.commit()
     connection.close()
-
 def update_room(room_id, number=None, equipment=None, capacity=None, is_active=None):
     """Zaktualizuj dane pokoju"""
     connection = engine.connect()
-    update_values = {}
+
+    updates = {}
+
     if number is not None:
-        update_values['number'] = number
+        updates['number'] = number
     if equipment is not None:
-        update_values['equipment'] = equipment
+        updates['equipment'] = equipment
     if capacity is not None:
-        update_values['capacity'] = capacity
+        updates['capacity'] = capacity
     if is_active is not None:
-        update_values['is_active'] = is_active
-    
-    connection.execute(table_room.update().where(table_room.c.id == room_id).values(**update_values))
-    connection.commit()
-    connection.close()
+        updates['is_active'] = is_active
+
+    if not updates:
+        print("Brak pól do aktualizacji")
+        return
+
+    try:
+        # Update the room with the specified values
+        connection.execute(
+            table_room.update()
+            .where(table_room.c.id == room_id)
+            .values(**updates)
+        )
+        connection.commit()  # Commit the changes
+        return {"message": "Room updated successfully."}, 200
+
+    except SQLAlchemyError as e:
+        connection.rollback()  # Rollback in case of error
+        return {"error": str(e)}, 500
+
+    finally:
+        connection.close()  # Ensure connection is closed
+
 
 def update_reservation(reservation_id, fk_user=None, fk_room=None, start_date=None, end_date=None, is_realized=None):
     """Zaktualizuj dane rezerwacji"""
@@ -173,11 +220,28 @@ def update_reservation(reservation_id, fk_user=None, fk_room=None, start_date=No
         update_values['end_date'] = end_date
     if is_realized is not None:
         update_values['is_realized'] = is_realized
-    
-    connection.execute(table_reservation.update().where(table_reservation.c.id == reservation_id).values(**update_values))
-    connection.commit()
-    connection.close()
 
+    if not update_values:
+        print("Brak pól do aktualizacji")
+        return
+    try:
+        # Update the room with the specified values
+        connection.execute(
+            table_reservation.update()
+            .where(table_reservation.c.id == reservation_id)
+            .values(**update_values)
+        )
+        connection.commit()  # Commit the changes
+        return {"message": "Room updated successfully."}, 200
+
+    except SQLAlchemyError as e:
+        connection.rollback()  # Rollback in case of error
+        return {"error": str(e)}, 500
+
+    finally:
+        connection.close()  # Ensure connection is closed
+
+  
 if __name__ == "__main__":
     create_database()
     print("Database created.")
