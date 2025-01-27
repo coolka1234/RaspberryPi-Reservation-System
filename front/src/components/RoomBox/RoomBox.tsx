@@ -1,5 +1,5 @@
 import { PropsWithChildren } from "react";
-import type { Maybe } from "../../types";
+import type { Maybe } from "../../models/common";
 import { makeClassString } from "../../utils";
 import "./RoomBox.css";
 

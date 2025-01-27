@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useContext, useState } from "react";
-import type { Maybe } from "../types";
+import type { Maybe } from "../models/common";
 import type { User } from "../models/User";
 
 interface AuthContextType {

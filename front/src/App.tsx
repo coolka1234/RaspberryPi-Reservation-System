@@ -23,7 +23,7 @@ function App() {
       <Route
         path="/add-reservation/:roomNumber"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRole="user">
             <AddReservation />
           </ProtectedRoute>
         }
@@ -31,7 +31,7 @@ function App() {
       <Route
         path="/my-reservations"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRole="user">
             <MyReservations />
           </ProtectedRoute>
         }
@@ -39,7 +39,7 @@ function App() {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRole="admin">
             <AdminPanel />
           </ProtectedRoute>
         }
@@ -47,7 +47,7 @@ function App() {
       <Route
         path="/archived-reservations/:roomNumber"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRole="admin">
             <ArchivedReservations />
           </ProtectedRoute>
         }
@@ -55,7 +55,7 @@ function App() {
       <Route
         path="/edit-room/:roomNumber?"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRole="admin">
             <EditRoom />
           </ProtectedRoute>
         }

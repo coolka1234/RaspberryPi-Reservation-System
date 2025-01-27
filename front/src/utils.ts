@@ -1,4 +1,4 @@
-import type { Maybe } from "./types";
+import type { Maybe } from "./models/common";
 
 export const formatDate = (date: Date): string => {
   const year = String(date.getFullYear());

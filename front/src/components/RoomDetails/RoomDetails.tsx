@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from "react";
-import type { Maybe } from "../../types";
+import type { Maybe } from "../../models/common";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../contexts/AuthContext";
 import { Button } from "react-bootstrap";

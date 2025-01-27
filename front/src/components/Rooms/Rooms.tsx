@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { Room } from "../../models/Room";
-import type { Maybe } from "../../types";
+import type { Maybe } from "../../models/common";
 import { RoomBox } from "../RoomBox/RoomBox";
 
 interface RoomProps extends PropsWithChildren {

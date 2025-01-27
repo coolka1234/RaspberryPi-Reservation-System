@@ -3,7 +3,7 @@ import { Logo } from "../../components/Logo/Logo";
 import { RoomDetails } from "../../components/RoomDetails/RoomDetails";
 import { Rooms } from "../../components/Rooms/Rooms";
 import { UserMenu } from "../../components/UserMenu/UserMenu";
-import type { Maybe } from "../../types";
+import type { Maybe } from "../../models/common";
 import "./MainPage.css";
 
 function MainPage() {
