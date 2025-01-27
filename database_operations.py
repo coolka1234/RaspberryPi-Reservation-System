@@ -113,6 +113,6 @@ def create_user(login, password, name, surname, uid):
 
 
 if __name__ == "__main__":
-    create_database()
-    print("Database created.")
+    create_user("user", "user", "user", "user", 928285915686)
+    print("User created")
                        

@@ -7,6 +7,9 @@ from sqlite3.dbapi2 import Timestamp
 import paho.mqtt.client as mqtt
 import sqlite3
 import time
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from database_operations import handle_card_read
 
 TOPIC = "worker/card"
