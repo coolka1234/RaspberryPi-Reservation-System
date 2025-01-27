@@ -9,6 +9,10 @@
   cursor: pointer;
 }
 
+.room-box-selected {
+  border: 3px solid #000;
+}
+
 .room-box-free {
   background-color: #333;
 }

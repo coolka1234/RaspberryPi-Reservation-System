@@ -22,7 +22,7 @@ function LoginBox() {
     }
 
     if (email === "b@b.com" && password === "password") {
-      logIn({ username: "aaa", type: "admin" });
+      logIn({ username: "bbb", type: "admin" });
       navigate("/");
       return;
     }
