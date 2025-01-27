@@ -1,12 +1,31 @@
-import { Button, Form } from "react-bootstrap";
-import "./LoginBox.css";
 import { useState } from "react";
+import { Button, Form } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { useLogIn } from "../../contexts/AuthContext";
+import "./LoginBox.css";
 
 function LoginBox() {
+  const logIn = useLogIn();
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string>("");
 
-  const logIn = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const tryLogIn = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
+
+    if (email === "a@a.com" && password === "password") {
+      logIn({ username: "aaa", type: "user" });
+      navigate("/");
+      return;
+    }
+
+    if (email === "b@b.com" && password === "password") {
+      logIn({ username: "aaa", type: "admin" });
+      navigate("/");
+      return;
+    }
 
     setMessage("Nieprawidłowe dane.");
   };
@@ -15,13 +34,24 @@ function LoginBox() {
     <div className="text-center">
       <h1 className="fw-bold">Witaj!</h1>
       <Form className="login-box mt-5 p-5">
-        <Form.Control type="email" placeholder="login@example.com" />
-        <Form.Control className="mt-2" type="password" placeholder="password" />
+        <Form.Control
+          type="email"
+          placeholder="login@example.com"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+        />
+        <Form.Control
+          className="mt-2"
+          type="password"
+          placeholder="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+        />
         <Button
           className="login-button mt-4"
           type="submit"
           variant="success"
-          onClick={logIn}>
+          onClick={tryLogIn}>
           Zaloguj się
         </Button>
       </Form>
