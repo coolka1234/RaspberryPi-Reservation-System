@@ -1,7 +1,7 @@
 import { PropsWithChildren } from "react";
 import type { Maybe } from "../../types";
-import "./RoomBox.css";
 import { makeClassString } from "../../utils";
+import "./RoomBox.css";
 
 interface RoomBoxProps extends PropsWithChildren {
   number: number;

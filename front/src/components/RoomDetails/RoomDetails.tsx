@@ -1,17 +1,16 @@
 import type { PropsWithChildren } from "react";
 import type { Maybe } from "../../types";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../../contexts/AuthContext";
+import { Button } from "react-bootstrap";
 
 interface RoomDetailsProps extends PropsWithChildren {
   selectedRoom: Maybe<number>;
 }
 
 function RoomDetails({ selectedRoom }: RoomDetailsProps) {
+  const user = useUser()!;
   const navigate = useNavigate();
-
-  const navigateToAddReservation = (): void => {
-    navigate(`/add-reservation/${selectedRoom}`);
-  };
 
   return (
     <div className="submain col-4 p-4">
@@ -42,11 +41,31 @@ function RoomDetails({ selectedRoom }: RoomDetailsProps) {
               </ul>
             </div>
           </div>
-          <button
-            className="btn btn-success"
-            onClick={navigateToAddReservation}>
-            Zarezerwuj
-          </button>
+          <div className="d-flex flex-column justify-content-center gap-2">
+            {user.type === "user" ? (
+              <Button
+                variant="success"
+                onClick={() => navigate(`/add-reservation/${selectedRoom}`)}>
+                Zarezerwuj
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="success"
+                  onClick={() => navigate(`/edit-room/${selectedRoom}`)}>
+                  Edytuj
+                </Button>
+                <Button variant="success" onClick={() => {}}>
+                  Usuń
+                </Button>
+                <Button
+                  variant="success"
+                  onClick={() => navigate("/archived-reservations")}>
+                  Archiwum rezerwacji
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
