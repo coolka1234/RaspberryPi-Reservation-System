@@ -12,6 +12,7 @@ table_reservation = Table('Reservation', metadata,
     Column('start_date', DateTime),
     Column('end_date', DateTime),
     Column('is_realized', Boolean, default=False, nullable=False),
+    Column('is_finalized', Boolean, default=False, nullable=False),
 )
 
 table_room = Table('Room', metadata,
@@ -214,7 +215,7 @@ def update_room(room_id, number=None, equipment=None, capacity=None, is_active=N
         connection.close()  # Ensure connection is closed
 
 
-def update_reservation(reservation_id, fk_user=None, fk_room=None, start_date=None, end_date=None, is_realized=None):
+def update_reservation(reservation_id, fk_user=None, fk_room=None, start_date=None, end_date=None, is_realized=None, is_finalized=None):
     """Zaktualizuj dane rezerwacji"""
     connection = engine.connect()
     update_values = {}
@@ -228,7 +229,8 @@ def update_reservation(reservation_id, fk_user=None, fk_room=None, start_date=No
         update_values['end_date'] = end_date
     if is_realized is not None:
         update_values['is_realized'] = is_realized
-
+    if is_finalized is not None:
+        update_values['is_finalized'] = is_finalized
     if not update_values:
         print("Brak pól do aktualizacji")
         return
