@@ -60,7 +60,9 @@ function RoomDetails({ selectedRoom }: RoomDetailsProps) {
                 </Button>
                 <Button
                   variant="success"
-                  onClick={() => navigate("/archived-reservations")}>
+                  onClick={() =>
+                    navigate(`/archived-reservations/${selectedRoom}`)
+                  }>
                   Archiwum rezerwacji
                 </Button>
               </>

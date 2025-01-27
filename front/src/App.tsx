@@ -7,6 +7,7 @@ import { EditRoom } from "./pages/EditRoom/EditRoom";
 import { Login } from "./pages/Login/Login";
 import { MainPage } from "./pages/MainPage/MainPage";
 import { MyReservations } from "./pages/MyReservations/MyReservations";
+import { ArchivedReservations } from "./pages/ArchivedReservations/ArchivedReservations";
 
 function App() {
   return (
@@ -40,6 +41,14 @@ function App() {
         element={
           <ProtectedRoute>
             <AdminPanel />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/archived-reservations/:roomNumber"
+        element={
+          <ProtectedRoute>
+            <ArchivedReservations />
           </ProtectedRoute>
         }
       />
