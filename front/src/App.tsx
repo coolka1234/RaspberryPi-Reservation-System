@@ -23,7 +23,7 @@ function App() {
       <Route
         path="/add-reservation/:roomNumber"
         element={
-          <ProtectedRoute allowedRole="user">
+          <ProtectedRoute>
             <AddReservation />
           </ProtectedRoute>
         }

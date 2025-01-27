@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useLogIn } from "../../contexts/AuthContext";
 import "./LoginBox.css";
 
 function LoginBox() {
   const logIn = useLogIn();
   const navigate = useNavigate();
+  const {
+    state: { from },
+  } = useLocation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,15 +18,17 @@ function LoginBox() {
   const tryLogIn = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
 
+    const goBackPath = from ?? "/";
+
     if (email === "a@a.com" && password === "password") {
       logIn({ username: "aaa", type: "user" });
-      navigate("/");
+      navigate(goBackPath);
       return;
     }
 
     if (email === "b@b.com" && password === "password") {
       logIn({ username: "bbb", type: "admin" });
-      navigate("/");
+      navigate(goBackPath);
       return;
     }
 
