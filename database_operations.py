@@ -45,10 +45,10 @@ def get_user_by_uid(uid):
     connection.close()
     return result
 
-def get_room_by_id(room_id):
+def get_room_by_number(room_number):
     """Pobierz pokój po ID"""
     connection=engine.connect()
-    result=connection.execute(table_room.select().where(table_room.c.id==room_id)).fetchone()
+    result=connection.execute(table_room.select().where(table_room.c.number==room_number)).fetchone()
     connection.close()
     return result
 
@@ -67,7 +67,7 @@ def handle_card_read(card_id, read_time, room_id):
         print(f"User with card id {card_id} not found.")
         connection.close()
         return False
-    room=get_room_by_id(room_id)
+    room=get_room_by_number(room_id)
     if room is None:
         print(f"Room with id {room_id} not found.")
         connection.close()
@@ -78,7 +78,7 @@ def handle_card_read(card_id, read_time, room_id):
         connection.close()
         return False
     else:
-        connection.execute(table_reservation.update().where(table_reservation.c.id==reservation.id).values(is_realized=True))
+        connection.execute(table_reservation.update().where(table_reservation.c.fk_user==reservation.fk_user).values(is_realized=True))
         connection.commit()
         connection.close()
         return True
