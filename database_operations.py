@@ -44,14 +44,22 @@ def get_user_by_uid(uid):
     connection = engine.connect()
     result = connection.execute(table_user.select().where(table_user.c.uid == uid)).fetchone()
     connection.close()
-    return result
+    
 
 def get_room_by_id(room_id):
-    """Pobierz pokój po ID"""
+    """Retrieve a room by its ID."""
     connection = engine.connect()
-    result = connection.execute(table_room.select().where(table_room.c.id == room_id)).fetchone()
-    connection.close()
-    return result
+    try:
+        result = connection.execute(table_room.select().where(table_room.c.id == room_id)).fetchone()
+        if result is None:
+            return {"error": "Room not found"}, 404 
+        columns = [column.name for column in table_room.columns]
+        room = dict(zip(columns, result))
+        return room
+    finally:
+        connection.close()
+
+
 
 def find_reservation(room_id, user_id, read_time):
     """Znajdź rezerwację dla użytkownika i pokoju"""

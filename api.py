@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_restful import Api, Resource
+from datetime import datetime
 from database_operations import (
-    get_rooms, create_room, get_reservations, create_reservation, get_user_by_uid, handle_card_read, delete_room, delete_reservation, update_room, update_reservation
+    get_rooms, table_reservation, get_room_by_id, create_room, find_reservation, get_reservations, create_reservation, get_user_by_uid, handle_card_read, delete_room, delete_reservation, update_room, update_reservation
 )
 
 app = Flask(__name__)
@@ -17,8 +18,16 @@ def reload_reservations():
 class RoomResource(Resource):
     def get(self):
         """Retrieve all rooms."""
-        rooms = reload_rooms()
-        return jsonify(rooms)
+        room_id = request.args.get("id")  # Retrieve the 'id' parameter from query string
+        if room_id:
+            room = get_room_by_id(room_id)
+            if room:
+                return room
+            return {"error": "Room not found."}, 404
+        else:
+            rooms = reload_rooms()
+            return rooms
+    
 
     def post(self):
         """Create a new room."""
@@ -66,9 +75,42 @@ class RoomResource(Resource):
 # CRUD RESERVATIONS
 class ReservationResource(Resource):
     def get(self):
-        """Retrieve all reservations."""
+        """Retrieve reservations or find a specific reservation."""
+        reservation_id = request.args.get("id")  # Retrieve 'id' from query string
+        user_id = request.args.get("user_id")  # Retrieve 'user_id' from query string
+        room_id = request.args.get("room_id")  # Retrieve 'room_id' from query string
+        read_time = request.args.get("read_time")  # Retrieve 'read_time' from query string
+
+        # Check for specific parameters to find a reservation
+        if user_id and room_id and read_time:
+            try:
+                # Convert read_time to datetime
+                read_time = datetime.fromisoformat(read_time)
+
+                # Find the reservation using the helper function
+                reservation = find_reservation(room_id=int(room_id), user_id=int(user_id), read_time=read_time)
+
+                if reservation:
+                    # Convert result to dictionary
+                    columns = [column.name for column in table_reservation.columns]
+                    reservation_dict = dict(zip(columns, reservation))
+                    return jsonify(reservation_dict)
+
+                return {"error": "Reservation not found."}, 404
+            except ValueError:
+                return {"error": "Invalid date format for read_time."}, 400
+
+        # Fetch a single reservation by ID
+        if reservation_id:
+            reservation = next((res for res in reload_reservations() if res['id'] == int(reservation_id)), None)
+            if reservation:
+                return jsonify(reservation)
+            return {"error": "Reservation not found."}, 404
+
+        # Fetch all reservations if no specific parameter is provided
         reservations = reload_reservations()
         return jsonify(reservations)
+
 
     def post(self):
         """Create a new reservation."""

@@ -3,7 +3,8 @@ from api import app
 
 def test_get_rooms():
     tester = app.test_client()
-    response = tester.get("/rooms")
+    response = tester.get("/rooms?id=24")
+    print(response)
     assert response.status_code == 200
 
 def test_create_room():
@@ -127,4 +128,5 @@ if __name__ == "__main__":
     test_get_reservations()
     test_update_reservation()
     test_delete_reservation()
+    test_get_rooms()
     
