@@ -7,9 +7,7 @@ import "./LoginBox.css";
 function LoginBox() {
   const logIn = useLogIn();
   const navigate = useNavigate();
-  const {
-    state: { from },
-  } = useLocation();
+  const from = useLocation()?.state?.from;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

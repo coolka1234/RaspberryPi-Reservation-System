@@ -12,11 +12,11 @@ function MainPage() {
 
   return (
     <>
-      <header className="w-100 p-2 d-flex justify-content-between align-items-center">
+      <header className="header w-100 p-2 d-flex justify-content-between align-items-center">
         <Logo />
         <UserMenu />
       </header>
-      <main className="main row h-100 p-4">
+      <main className="main row p-4">
         <Rooms
           rooms={rooms}
           selectedRoom={selectedRoom}
