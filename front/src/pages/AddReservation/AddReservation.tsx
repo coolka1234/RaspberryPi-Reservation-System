@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { ArrowLeft } from "react-bootstrap-icons";
 import { useNavigate, useParams } from "react-router-dom";
+import { formatDate } from "../../utils";
 
 function AddReservation() {
   const { roomNumber } = useParams();
@@ -35,6 +36,8 @@ function AddReservation() {
               <Col sm="8">
                 <Form.Control
                   type="date"
+                  required
+                  min={formatDate(new Date())}
                   value={reservationDate}
                   onChange={(event) => setReservationDate(event.target.value)}
                 />
@@ -47,6 +50,8 @@ function AddReservation() {
               <Col sm="3">
                 <Form.Control
                   type="text"
+                  required
+                  placeholder="00:00"
                   value={reservationStartHour}
                   onChange={(event) =>
                     setReservationStartHour(event.target.value)
@@ -61,6 +66,8 @@ function AddReservation() {
               <Col sm="3">
                 <Form.Control
                   type="text"
+                  required
+                  placeholder="00:00"
                   value={reservationEndHour}
                   onChange={(event) =>
                     setReservationEndHour(event.target.value)
