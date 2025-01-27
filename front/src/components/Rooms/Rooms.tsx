@@ -5,20 +5,21 @@ import { RoomBox } from "../RoomBox/RoomBox";
 
 interface RoomProps extends PropsWithChildren {
   rooms: Room[];
-  selectedRoom: Maybe<number>;
-  setSelectedRoom: React.Dispatch<React.SetStateAction<Maybe<number>>>;
+  selectedRoomId: Maybe<number>;
+  setSelectedRoomId: React.Dispatch<React.SetStateAction<Maybe<number>>>;
 }
 
-function Rooms({ rooms, selectedRoom, setSelectedRoom }: RoomProps) {
+function Rooms({ rooms, selectedRoomId, setSelectedRoomId }: RoomProps) {
   return (
     <div className="col-8 h-100">
-      <div className="submain h-100 p-4 d-flex flex-row gap-3">
+      <div className="submain h-100 p-4 d-flex flex-wrap flex-row gap-3">
         {rooms.map((room) => (
           <RoomBox
-            key={room.number}
+            key={room.id}
+            roomId={room.id}
             number={room.number}
-            setSelectedRoom={setSelectedRoom}
-            isSelected={room.number === selectedRoom}
+            setSelectedRoom={setSelectedRoomId}
+            isSelected={room.id === selectedRoomId}
           />
         ))}
       </div>

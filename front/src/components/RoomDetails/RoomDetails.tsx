@@ -3,14 +3,29 @@ import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../contexts/AuthContext";
 import type { Maybe } from "../../models/common";
+import type { Room } from "../../models/Room";
+import { API_URLS } from "../../constants";
 
 interface RoomDetailsProps extends PropsWithChildren {
-  selectedRoom: Maybe<number>;
+  selectedRoom: Maybe<Room>;
+  refetchRooms: unknown;
 }
 
-function RoomDetails({ selectedRoom }: RoomDetailsProps) {
+function RoomDetails({ selectedRoom, refetchRooms }: RoomDetailsProps) {
   const user = useUser()!;
   const navigate = useNavigate();
+
+  const deleteRoom = async (): Promise<void> => {
+    if (selectedRoom == null) {
+      return;
+    }
+
+    await fetch(`${API_URLS.Rooms}/${selectedRoom.id}`, {
+      method: "DELETE",
+    });
+
+    refetchRooms();
+  };
 
   return (
     <div className="submain col-4 p-4">
@@ -18,7 +33,7 @@ function RoomDetails({ selectedRoom }: RoomDetailsProps) {
         <div className="h-100 d-flex flex-column justify-content-between">
           <div>
             <div className="text-center">
-              <h2>Sala {selectedRoom} - szczegóły</h2>
+              <h2>Sala {selectedRoom.number} - szczegóły</h2>
             </div>
             <div>
               <h3>Przyszłe rezerwacje</h3>
@@ -32,11 +47,12 @@ function RoomDetails({ selectedRoom }: RoomDetailsProps) {
               <h3>Dane szczegółowe sali</h3>
               <ul>
                 <li>
-                  <span className="fw-bold">Liczba miejsc: </span> 40
+                  <span className="fw-bold">Liczba miejsc: </span>{" "}
+                  {selectedRoom.capacity}
                 </li>
                 <li>
-                  <span className="fw-bold">Sprzęt: </span> rzutnik, drukarka,
-                  laptop
+                  <span className="fw-bold">Sprzęt: </span>{" "}
+                  {selectedRoom.equipment}
                 </li>
               </ul>
             </div>
@@ -45,23 +61,23 @@ function RoomDetails({ selectedRoom }: RoomDetailsProps) {
             {user.type === "user" ? (
               <Button
                 variant="success"
-                onClick={() => navigate(`/add-reservation/${selectedRoom}`)}>
+                onClick={() => navigate(`/add-reservation/${selectedRoom.id}`)}>
                 Zarezerwuj
               </Button>
             ) : (
               <>
                 <Button
                   variant="success"
-                  onClick={() => navigate(`/edit-room/${selectedRoom}`)}>
+                  onClick={() => navigate(`/edit-room/${selectedRoom.id}`)}>
                   Edytuj
                 </Button>
-                <Button variant="success" onClick={() => {}}>
+                <Button variant="success" onClick={deleteRoom}>
                   Usuń
                 </Button>
                 <Button
                   variant="success"
                   onClick={() =>
-                    navigate(`/archived-reservations/${selectedRoom}`)
+                    navigate(`/archived-reservations/${selectedRoom.id}`)
                   }>
                   Archiwum rezerwacji
                 </Button>

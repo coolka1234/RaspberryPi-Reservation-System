@@ -23,7 +23,7 @@ const parseHourToMinutes = (hour: string): number => {
 };
 
 function AddReservation() {
-  const { roomNumber } = useParams();
+  const { roomId } = useParams();
   const navigate = useNavigate();
 
   const form = useRef<HTMLFormElement>(null);
@@ -64,7 +64,7 @@ function AddReservation() {
     setIsAddBtnEnabled(form.current?.checkValidity() ?? false);
   }, [reservationDate, reservationStartHour, reservationEndHour]);
 
-  if (roomNumber == null) {
+  if (roomId == null) {
     navigate("/");
   }
 
@@ -83,7 +83,7 @@ function AddReservation() {
   return (
     <PageWithBackButton>
       <h1>
-        <span className="fw-bold">Rezerwacja</span> - sala {roomNumber}
+        <span className="fw-bold">Rezerwacja</span> - sala {roomId}
       </h1>
       <Form
         ref={form}
