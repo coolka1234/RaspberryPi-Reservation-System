@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { Button, Table } from "react-bootstrap";
 import { PageWithBackButton } from "../../components/PageWithBackButton/PageWithBackButton";
-import { Table } from "react-bootstrap";
 
 function MyReservations() {
   const [reservations, setReservations] = useState([
@@ -36,7 +36,7 @@ function MyReservations() {
                 <td>{reservation.date}</td>
                 <td>{reservation.roomNumber}</td>
                 <td>
-                  <button className="btn btn-success">Odwołaj</button>
+                  <Button variant="success">Odwołaj</Button>
                 </td>
               </tr>
             ))}

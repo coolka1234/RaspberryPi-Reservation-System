@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { Table } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageWithBackButton } from "../../components/PageWithBackButton/PageWithBackButton";
-import { Table } from "react-bootstrap";
 
 function ArchivedReservations() {
   const { roomNumber } = useParams();

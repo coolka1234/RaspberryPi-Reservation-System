@@ -1,8 +1,8 @@
 import type { PropsWithChildren } from "react";
-import type { Maybe } from "../../models/common";
+import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../contexts/AuthContext";
-import { Button } from "react-bootstrap";
+import type { Maybe } from "../../models/common";
 
 interface RoomDetailsProps extends PropsWithChildren {
   selectedRoom: Maybe<number>;

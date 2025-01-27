@@ -1,6 +1,6 @@
 import { Button } from "react-bootstrap";
-import { PageWithBackButton } from "../../components/PageWithBackButton/PageWithBackButton";
 import { useNavigate } from "react-router-dom";
+import { PageWithBackButton } from "../../components/PageWithBackButton/PageWithBackButton";
 
 function AdminPanel() {
   const navigate = useNavigate();
