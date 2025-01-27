@@ -15,6 +15,7 @@ function Rooms({ rooms, selectedRoom, setSelectedRoom }: RoomProps) {
       <div className="submain h-100 p-4 d-flex flex-row gap-3">
         {rooms.map((room) => (
           <RoomBox
+            key={room.number}
             number={room.number}
             setSelectedRoom={setSelectedRoom}
             isSelected={room.number === selectedRoom}
