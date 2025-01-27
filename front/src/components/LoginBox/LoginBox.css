@@ -1,0 +1,13 @@
+.login-box {
+  border-radius: 2em;
+  background-color: #edfaf5;
+  box-shadow: 8px 8px 24px -10px rgba(66, 68, 90, 1);
+}
+
+.login-button {
+  font-variant: small-caps;
+}
+
+.msg-box {
+  height: 2em;
+}
