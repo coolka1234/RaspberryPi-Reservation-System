@@ -75,7 +75,7 @@ def connect_to_mqtt_broker():
 
 
 def main():
-    GPIO.add_event_detect(buttonRed, GPIO.FALLING, callback=handle_button_press, bouncetime=200)
+    # GPIO.add_event_detect(buttonRed, GPIO.FALLING, callback=handle_button_press, bouncetime=200)
     print('Przyloz karte.')
     connect_to_mqtt_broker()
     read_rfid()

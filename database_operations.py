@@ -1,6 +1,6 @@
 from datetime import timedelta
 from math import e
-from sqlalchemy import Boolean, ForeignKey, MetaData, create_engine, Table, Integer, Column, String, DateTime, table
+from sqlalchemy import Boolean, ForeignKey, MetaData, create_engine, Table, Integer, Column, String, DateTime 
 metadata=MetaData()
 engine=create_engine('sqlite:///database.db', echo=True)
 table_reservation=Table('Reservation',metadata,
@@ -10,6 +10,7 @@ table_reservation=Table('Reservation',metadata,
     Column('start_date',DateTime),
     Column('end_date',DateTime),
     Column('is_realized',Boolean, default=False, nullable=False),
+    Column('is_finalized',Boolean, default=False, nullable=False),
 )
 
 table_room=Table('Room',metadata,
