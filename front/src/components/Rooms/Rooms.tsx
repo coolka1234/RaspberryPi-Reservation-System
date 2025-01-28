@@ -12,7 +12,7 @@ interface RoomProps extends PropsWithChildren {
 function Rooms({ rooms, selectedRoomId, setSelectedRoomId }: RoomProps) {
   return (
     <div className="col-8 h-100">
-      <div className="submain h-100 p-4 d-flex flex-wrap flex-row gap-3">
+      <div className="submain h-100 p-4 d-flex flex-wrap flex-row align-content-start gap-3">
         {rooms.map((room) => (
           <RoomBox
             key={room.id}

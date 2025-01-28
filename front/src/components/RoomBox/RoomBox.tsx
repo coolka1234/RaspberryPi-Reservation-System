@@ -20,7 +20,7 @@ function RoomBox({
     <div
       className={makeClassString(
         "room-box",
-        "room-box-taken",
+        "room-box-free",
         isSelected && "room-box-selected"
       )}
       onClick={() => setSelectedRoom(roomId)}>

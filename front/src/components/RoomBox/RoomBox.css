@@ -14,9 +14,13 @@
 }
 
 .room-box-free {
-  background-color: #333;
+  background-color: #5c5c5c;
 }
 
 .room-box-taken {
-  background-color: orange;
+  background-color: rgb(255, 174, 44);
+}
+
+.room-box-overtime {
+  background-color: rgb(152, 5, 5);
 }

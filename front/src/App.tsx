@@ -49,7 +49,7 @@ function App() {
           }
         />
         <Route
-          path="/archived-reservations/:roomNumber"
+          path="/archived-reservations/:roomId"
           element={
             <ProtectedRoute allowedRole="admin">
               <ArchivedReservations />
@@ -57,7 +57,7 @@ function App() {
           }
         />
         <Route
-          path="/edit-room/:roomNumber?"
+          path="/edit-room/:roomId?"
           element={
             <ProtectedRoute allowedRole="admin">
               <EditRoom />
