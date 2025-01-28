@@ -1,30 +1,55 @@
 import type { PropsWithChildren } from "react";
 import { Button } from "react-bootstrap";
+import type { UseQueryResult } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { fetchApi } from "../../api";
+import { API_URLS } from "../../constants";
 import { useUser } from "../../contexts/AuthContext";
+import {
+  useShowConfirmMessageBox,
+  useShowErrorMessageBox,
+} from "../../contexts/MessageBoxContext";
+import { useShowToast } from "../../contexts/ToastContext";
 import type { Maybe } from "../../models/common";
 import type { Room } from "../../models/Room";
-import { API_URLS } from "../../constants";
 
 interface RoomDetailsProps extends PropsWithChildren {
   selectedRoom: Maybe<Room>;
-  refetchRooms: unknown;
+  refetchRooms: () => Promise<UseQueryResult>;
 }
 
 function RoomDetails({ selectedRoom, refetchRooms }: RoomDetailsProps) {
   const user = useUser()!;
   const navigate = useNavigate();
+  const showConfirmMessageBox = useShowConfirmMessageBox();
+  const showErrorMessageBox = useShowErrorMessageBox();
+  const showToast = useShowToast();
 
-  const deleteRoom = async (): Promise<void> => {
+  const deleteRoom = (): void => {
     if (selectedRoom == null) {
       return;
     }
 
-    await fetch(`${API_URLS.Rooms}/${selectedRoom.id}`, {
-      method: "DELETE",
-    });
+    showConfirmMessageBox(
+      "Potwierdzenie",
+      `Czy na pewno chcesz usunąć salę ${selectedRoom.number}?`,
+      async () => {
+        try {
+          await fetchApi(`${API_URLS.Rooms}/${selectedRoom.id}`, {
+            method: "DELETE",
+          });
 
-    refetchRooms();
+          showToast("Sala usunięta pomyślnie.");
+
+          refetchRooms();
+        } catch {
+          showErrorMessageBox(
+            "Nieoczekiwany błąd!",
+            "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później."
+          );
+        }
+      }
+    );
   };
 
   return (
