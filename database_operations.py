@@ -79,10 +79,21 @@ def handle_card_read(card_id, read_time, room_id):
         connection.close()
         return False
     else:
-        connection.execute(table_reservation.update().where(table_reservation.c.fk_user==reservation.fk_user).values(is_realized=True))
-        connection.commit()
-        connection.close()
-        return True
+        if reservation.is_finalized:
+            print(f"Reservation for user {user.id} and room {room_id} is already finalized.")
+            connection.close()
+            return False
+        elif reservation.is_realized:
+            print(f"Reservation for user {user.id} and room {room_id} is realized. Finalizing it.")
+            connection.execute(table_reservation.update().where(table_reservation.c.id==reservation.id).values(is_finalized=True))
+            connection.close()
+            return True
+        else:
+            print(f"Reservation for user {user.id} and room {room_id} found. Realizing it.")
+            connection.execute(table_reservation.update().where(table_reservation.c.id==reservation.id).values(is_realized=True))
+            connection.commit()
+            connection.close()
+            return True
 
 def create_reservation(fk_user, fk_room, start_date, end_date):
     """Utwórz rezerwację"""
