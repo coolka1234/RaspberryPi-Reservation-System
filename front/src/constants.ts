@@ -1,4 +1,5 @@
 export const FETCH_KEYS = {
+  AddReservationRoom: "fetchAddReservationRoom",
   ArchivedReservations: "fetchArchivedReservations",
   ArchivedReservationsRoom: "fetchArchivedReservationRoom",
   Reservations: "fetchReservations",

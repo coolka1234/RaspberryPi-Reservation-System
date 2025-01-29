@@ -7,13 +7,16 @@ import { PageWithBackButton } from "../../components/PageWithBackButton/PageWith
 import { API_URLS, FETCH_KEYS } from "../../constants";
 import { useShowErrorMessageBox } from "../../contexts/MessageBoxContext";
 import { useShowToast } from "../../contexts/ToastContext";
-import type { Room } from "../../models/Room";
+import type { Room, RoomPayload } from "../../models/Room";
+import { useToggleRefetch } from "../../contexts/RefetchContext";
 
 function EditRoom() {
   const { roomId } = useParams();
 
   const showToast = useShowToast();
   const showErrorMessageBox = useShowErrorMessageBox();
+
+  const refetchRooms = useToggleRefetch();
 
   const {
     isLoading,
@@ -61,7 +64,7 @@ function EditRoom() {
       return;
     }
 
-    const payload: Room = {
+    const payload: RoomPayload = {
       id: Number(roomId),
       number: roomNumber,
       equipment,
@@ -80,6 +83,7 @@ function EditRoom() {
       showToast("Sala zapisana pomyślnie.");
 
       refetch();
+      refetchRooms();
     } catch {
       showErrorMessageBox();
     }

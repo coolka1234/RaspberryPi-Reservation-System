@@ -16,12 +16,16 @@ export interface RoomReservation {
   is_finalized: boolean;
 }
 
-export interface Room {
+export interface RoomPayload {
   id?: number;
   number: string;
   capacity: number;
   equipment: string;
-  is_active?: boolean;
+}
+
+export interface Room extends RoomPayload {
+  id: number;
+  is_active: boolean;
   reservations: RoomReservation[];
   status: RoomStatus;
 }

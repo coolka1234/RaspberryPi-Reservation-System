@@ -1,7 +1,14 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
-import { useParams } from "react-router-dom";
+import { Button, Col, Form, Row, Spinner } from "react-bootstrap";
+import { useQuery } from "react-query";
+import { useNavigate, useParams } from "react-router-dom";
+import { fetchApi, queryFunctionFactory } from "../../api";
 import { PageWithBackButton } from "../../components/PageWithBackButton/PageWithBackButton";
+import { API_URLS, FETCH_KEYS } from "../../constants";
+import { useUser } from "../../contexts/AuthContext";
+import { useShowErrorMessageBox } from "../../contexts/MessageBoxContext";
+import { useShowToast } from "../../contexts/ToastContext";
+import type { Room } from "../../models/Room";
 import { formatDate } from "../../utils";
 
 const MINUTES_IN_HOUR = 60;
@@ -25,6 +32,13 @@ const parseHourToMinutes = (hour: string): number => {
 function AddReservation() {
   const { roomId } = useParams();
 
+  const user = useUser();
+
+  const navigate = useNavigate();
+
+  const showErrorMessageBox = useShowErrorMessageBox();
+  const showToast = useShowToast();
+
   const form = useRef<HTMLFormElement>(null);
   const startHourInput = useRef<HTMLInputElement>(null);
   const endHourInput = useRef<HTMLInputElement>(null);
@@ -33,6 +47,21 @@ function AddReservation() {
   const [reservationStartHour, setReservationStartHour] = useState("");
   const [reservationEndHour, setReservationEndHour] = useState("");
   const [isAddBtnEnabled, setIsAddBtnEnabled] = useState(false);
+
+  const {
+    isLoading,
+    isError,
+    data: room,
+  } = useQuery<Room>({
+    queryKey: [FETCH_KEYS.AddReservationRoom],
+    queryFn: queryFunctionFactory(`${API_URLS.Rooms}/${roomId}`),
+  });
+
+  useEffect(() => {
+    if (isError) {
+      showErrorMessageBox();
+    }
+  }, [isError]);
 
   useEffect(() => {
     const isStartHourCorrect = isHourCorrect(reservationStartHour);
@@ -63,7 +92,7 @@ function AddReservation() {
     setIsAddBtnEnabled(form.current?.checkValidity() ?? false);
   }, [reservationDate, reservationStartHour, reservationEndHour]);
 
-  const addReservation = (event: FormEvent): void => {
+  const addReservation = async (event: FormEvent): Promise<void> => {
     event.preventDefault();
 
     const form = event.target as HTMLFormElement;
@@ -72,70 +101,102 @@ function AddReservation() {
       return;
     }
 
-    console.log("added");
+    try {
+      await fetchApi(API_URLS.Reservations, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fk_room: roomId,
+          fk_user: user?.id,
+          start_date: `${reservationDate} ${reservationStartHour}`,
+          end_date: `${reservationDate} ${reservationEndHour}`,
+        }),
+      });
+
+      showToast("Salę zarezerwowano pomyślnie.");
+
+      navigate("/");
+    } catch {
+      showErrorMessageBox();
+    }
   };
 
   return (
     <PageWithBackButton>
-      <h1>
-        <span className="fw-bold">Rezerwacja</span> - sala {roomId}
-      </h1>
-      <Form
-        ref={form}
-        className="mt-5 p-5"
-        validated={true}
-        noValidate
-        onSubmit={addReservation}>
-        <Form.Group as={Row}>
-          <Form.Label className="fw-bold" column sm="4">
-            Data rezerwacji
-          </Form.Label>
-          <Col sm="8">
-            <Form.Control
-              type="date"
-              required
-              min={formatDate(new Date())}
-              value={reservationDate}
-              onChange={(event) => setReservationDate(event.target.value)}
-            />
-          </Col>
-        </Form.Group>
-        <Form.Group className="mt-3" as={Row}>
-          <Form.Label className="fw-bold" column sm="4">
-            Godziny rezerwacji
-          </Form.Label>
-          <Col sm="3">
-            <Form.Control
-              ref={startHourInput}
-              type="text"
-              required
-              placeholder="00:00"
-              value={reservationStartHour}
-              onChange={(event) => setReservationStartHour(event.target.value)}
-            />
-          </Col>
-          <Col
-            className="fw-bold text-center d-flex justify-content-center align-items-center"
-            sm="2">
-            -
-          </Col>
-          <Col sm="3">
-            <Form.Control
-              ref={endHourInput}
-              type="text"
-              required
-              placeholder="00:00"
-              value={reservationEndHour}
-              onChange={(event) => setReservationEndHour(event.target.value)}
-            />
-          </Col>
-        </Form.Group>
-        <div className="mt-5 d-flex justify-content-center">
-          <Button type="submit" variant="success" disabled={!isAddBtnEnabled}>
-            Zarezerwuj
-          </Button>
+      {isLoading ? (
+        <div className="text-center">
+          <Spinner />
         </div>
-      </Form>
+      ) : (
+        <>
+          <h1>
+            <span className="fw-bold">Rezerwacja</span> - sala {room?.number}
+          </h1>
+          <Form
+            ref={form}
+            className="mt-5 p-5"
+            validated={true}
+            noValidate
+            onSubmit={addReservation}>
+            <Form.Group as={Row}>
+              <Form.Label className="fw-bold" column sm="4">
+                Data rezerwacji
+              </Form.Label>
+              <Col sm="8">
+                <Form.Control
+                  type="date"
+                  required
+                  min={formatDate(new Date())}
+                  value={reservationDate}
+                  onChange={(event) => setReservationDate(event.target.value)}
+                />
+              </Col>
+            </Form.Group>
+            <Form.Group className="mt-3" as={Row}>
+              <Form.Label className="fw-bold" column sm="4">
+                Godziny rezerwacji
+              </Form.Label>
+              <Col sm="3">
+                <Form.Control
+                  ref={startHourInput}
+                  type="text"
+                  required
+                  placeholder="00:00"
+                  value={reservationStartHour}
+                  onChange={(event) =>
+                    setReservationStartHour(event.target.value)
+                  }
+                />
+              </Col>
+              <Col
+                className="fw-bold text-center d-flex justify-content-center align-items-center"
+                sm="2">
+                -
+              </Col>
+              <Col sm="3">
+                <Form.Control
+                  ref={endHourInput}
+                  type="text"
+                  required
+                  placeholder="00:00"
+                  value={reservationEndHour}
+                  onChange={(event) =>
+                    setReservationEndHour(event.target.value)
+                  }
+                />
+              </Col>
+            </Form.Group>
+            <div className="mt-5 d-flex justify-content-center">
+              <Button
+                type="submit"
+                variant="success"
+                disabled={!isAddBtnEnabled}>
+                Zarezerwuj
+              </Button>
+            </div>
+          </Form>
+        </>
+      )}
     </PageWithBackButton>
   );
 }

@@ -9,7 +9,6 @@ from database_operations import (
     create_room,
     delete_reservation,
     delete_room,
-    find_reservation,
     find_archived_reservations_for_room,
     find_reservations_by_user,
     get_reservations,
@@ -204,6 +203,7 @@ class ReservationResource(Resource):
 
     def post(self):
         """Create a new reservation."""
+
         data = request.get_json()
         fk_user = data.get("fk_user")
         fk_room = data.get("fk_room")
@@ -213,11 +213,15 @@ class ReservationResource(Resource):
         if not (fk_user and fk_room and start_date and end_date):
             return {"error": "Missing required fields."}, 400
 
+        start_date = datetime.strptime(start_date, date_format)
+        end_date = datetime.strptime(end_date, date_format)
+
         create_reservation(fk_user, fk_room, start_date, end_date)
         return {"message": "Reservation created successfully."}, 201
 
     def put(self):
         """Update an existing reservation."""
+
         data = request.get_json()
         reservation_id = data.get("id")
         updated_fields = {

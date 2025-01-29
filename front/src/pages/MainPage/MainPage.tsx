@@ -11,6 +11,7 @@ import { queryFunctionFactory } from "../../api";
 import { API_URLS, FETCH_KEYS } from "../../constants";
 import { Spinner } from "react-bootstrap";
 import { useShowErrorMessageBox } from "../../contexts/MessageBoxContext";
+import { useDoRefetch } from "../../contexts/RefetchContext";
 
 const REFETCH_TIME_SECS = 30 * 1000;
 
@@ -24,6 +25,11 @@ function MainPage() {
     queryKey: [FETCH_KEYS.Rooms],
     queryFn: queryFunctionFactory(API_URLS.Rooms),
   });
+
+  const doRefetch = useDoRefetch();
+  useEffect(() => {
+    refetch();
+  }, [doRefetch]);
 
   const showErrorMessageBox = useShowErrorMessageBox();
 
@@ -69,7 +75,7 @@ function MainPage() {
                 selectedRoomId={selectedRoomId}
                 setSelectedRoomId={setSelectedRoomId}
               />
-              <RoomDetails selectedRoom={selectedRoom} refetchRooms={refetch} />
+              <RoomDetails selectedRoom={selectedRoom} />
             </>
           )
         )}

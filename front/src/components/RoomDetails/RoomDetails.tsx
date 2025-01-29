@@ -1,6 +1,5 @@
 import type { PropsWithChildren } from "react";
 import { Button } from "react-bootstrap";
-import type { UseQueryResult } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { fetchApi } from "../../api";
 import { API_URLS } from "../../constants";
@@ -9,6 +8,7 @@ import {
   useShowConfirmMessageBox,
   useShowErrorMessageBox,
 } from "../../contexts/MessageBoxContext";
+import { useToggleRefetch } from "../../contexts/RefetchContext";
 import { useShowToast } from "../../contexts/ToastContext";
 import type { Maybe } from "../../models/common";
 import type { Room, RoomReservation } from "../../models/Room";
@@ -17,15 +17,17 @@ import "./RoomDetails.css";
 
 interface RoomDetailsProps extends PropsWithChildren {
   selectedRoom: Maybe<Room>;
-  refetchRooms: () => Promise<UseQueryResult>;
 }
 
-function RoomDetails({ selectedRoom, refetchRooms }: RoomDetailsProps) {
+function RoomDetails({ selectedRoom }: RoomDetailsProps) {
   const user = useUser()!;
   const navigate = useNavigate();
+
   const showConfirmMessageBox = useShowConfirmMessageBox();
   const showErrorMessageBox = useShowErrorMessageBox();
   const showToast = useShowToast();
+
+  const refetchRooms = useToggleRefetch();
 
   const deleteRoom = (): void => {
     if (selectedRoom == null) {
