@@ -9,6 +9,8 @@ import type { Room } from "../../models/Room";
 import "./MainPage.css";
 import { queryFunctionFactory } from "../../api";
 import { API_URLS, FETCH_KEYS } from "../../constants";
+import { Spinner } from "react-bootstrap";
+import { useShowErrorMessageBox } from "../../contexts/MessageBoxContext";
 
 function MainPage() {
   const {
@@ -22,30 +24,46 @@ function MainPage() {
     queryFn: queryFunctionFactory(API_URLS.Rooms),
   });
 
+  const showErrorMessageBox = useShowErrorMessageBox();
+
   const [selectedRoomId, setSelectedRoomId] = useState<Maybe<number>>(null);
   const [selectedRoom, setSelectedRoom] = useState<Maybe<Room>>(null);
+
+  useEffect(() => {
+    if (isError) {
+      showErrorMessageBox();
+    }
+  }, [isError]);
 
   useEffect(() => {
     setSelectedRoom(rooms?.find((room) => room.id === selectedRoomId));
   }, [selectedRoomId]);
 
   return (
-    !isLoading && (
-      <>
-        <header className="header w-100 p-2 d-flex justify-content-between align-items-center">
-          <Logo />
-          <UserMenu />
-        </header>
-        <main className="main row p-4">
-          <Rooms
-            rooms={rooms!}
-            selectedRoomId={selectedRoomId}
-            setSelectedRoomId={setSelectedRoomId}
-          />
-          <RoomDetails selectedRoom={selectedRoom} refetchRooms={refetch} />
-        </main>
-      </>
-    )
+    <>
+      <header className="header w-100 p-2 d-flex justify-content-between align-items-center">
+        <Logo />
+        <UserMenu />
+      </header>
+      <main className="main row p-4">
+        {isLoading || isRefetching ? (
+          <div className="text-center">
+            <Spinner />
+          </div>
+        ) : (
+          !isError && (
+            <>
+              <Rooms
+                rooms={rooms!}
+                selectedRoomId={selectedRoomId}
+                setSelectedRoomId={setSelectedRoomId}
+              />
+              <RoomDetails selectedRoom={selectedRoom} refetchRooms={refetch} />
+            </>
+          )
+        )}
+      </main>
+    </>
   );
 }
 

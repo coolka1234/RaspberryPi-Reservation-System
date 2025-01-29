@@ -43,10 +43,7 @@ function RoomDetails({ selectedRoom, refetchRooms }: RoomDetailsProps) {
 
           refetchRooms();
         } catch {
-          showErrorMessageBox(
-            "Nieoczekiwany błąd!",
-            "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później."
-          );
+          showErrorMessageBox();
         }
       }
     );

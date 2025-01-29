@@ -20,8 +20,8 @@ export const MESSAGE_BOX_TYPES = {
 export type MessageBoxType = ObjectValues<typeof MESSAGE_BOX_TYPES>;
 
 type ShowErrorMessageBox = (
-  title: string,
-  message: string,
+  title?: string,
+  message?: string,
   onClose?: Maybe<() => void>
 ) => void;
 type ShowConfirmMessageBox = (
@@ -46,8 +46,8 @@ export const MessageBoxProvider = ({ children }: PropsWithChildren) => {
   const [shown, setShown] = useState(false);
 
   const showErrorMessageBox: ShowErrorMessageBox = (
-    title,
-    message,
+    title = "Nieoczekiwany błąd!",
+    message = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
     onClose = null
   ) => {
     setTitle(title);
@@ -72,6 +72,7 @@ export const MessageBoxProvider = ({ children }: PropsWithChildren) => {
     onConfirm = null
   ) => {
     setTitle(title);
+    setTitleClass("");
     setMessage(message);
     setIcon(<QuestionCircleFill />);
     setButtons(
