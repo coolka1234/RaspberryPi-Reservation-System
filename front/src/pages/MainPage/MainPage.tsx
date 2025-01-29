@@ -12,13 +12,14 @@ import { API_URLS, FETCH_KEYS } from "../../constants";
 import { Spinner } from "react-bootstrap";
 import { useShowErrorMessageBox } from "../../contexts/MessageBoxContext";
 
+const REFETCH_TIME_SECS = 30 * 1000;
+
 function MainPage() {
   const {
     isLoading,
     isError,
     data: rooms,
     refetch,
-    isRefetching,
   } = useQuery<Room[]>({
     queryKey: [FETCH_KEYS.Rooms],
     queryFn: queryFunctionFactory(API_URLS.Rooms),
@@ -28,6 +29,16 @@ function MainPage() {
 
   const [selectedRoomId, setSelectedRoomId] = useState<Maybe<number>>(null);
   const [selectedRoom, setSelectedRoom] = useState<Maybe<Room>>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, REFETCH_TIME_SECS);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     if (isError) {
@@ -46,7 +57,7 @@ function MainPage() {
         <UserMenu />
       </header>
       <main className="main row p-4">
-        {isLoading || isRefetching ? (
+        {isLoading ? (
           <div className="text-center">
             <Spinner />
           </div>
