@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { PageWithBackButton } from "../../components/PageWithBackButton/PageWithBackButton";
 import { formatDate } from "../../utils";
 
@@ -24,7 +24,6 @@ const parseHourToMinutes = (hour: string): number => {
 
 function AddReservation() {
   const { roomId } = useParams();
-  const navigate = useNavigate();
 
   const form = useRef<HTMLFormElement>(null);
   const startHourInput = useRef<HTMLInputElement>(null);
@@ -63,10 +62,6 @@ function AddReservation() {
   useEffect(() => {
     setIsAddBtnEnabled(form.current?.checkValidity() ?? false);
   }, [reservationDate, reservationStartHour, reservationEndHour]);
-
-  if (roomId == null) {
-    navigate("/");
-  }
 
   const addReservation = (event: FormEvent): void => {
     event.preventDefault();

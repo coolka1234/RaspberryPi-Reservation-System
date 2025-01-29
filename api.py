@@ -244,7 +244,7 @@ class ReservationResource(Resource):
 
 # ADDING RESOURCES TO API
 api.add_resource(RoomResource, "/rooms", "/rooms/<id>")
-api.add_resource(ReservationResource, "/reservations")
+api.add_resource(ReservationResource, "/reservations", "/reservations/<id>")
 api.add_resource(UserResource, "/users")
 
 if __name__ == "__main__":

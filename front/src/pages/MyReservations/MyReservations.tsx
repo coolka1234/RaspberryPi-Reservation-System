@@ -1,11 +1,15 @@
 import { useEffect } from "react";
 import { Button, Spinner, Table } from "react-bootstrap";
 import { useQuery } from "react-query";
-import { queryFunctionFactory } from "../../api";
+import { fetchApi, queryFunctionFactory } from "../../api";
 import { PageWithBackButton } from "../../components/PageWithBackButton/PageWithBackButton";
 import { API_URLS, FETCH_KEYS } from "../../constants";
 import { useUser } from "../../contexts/AuthContext";
-import { useShowErrorMessageBox } from "../../contexts/MessageBoxContext";
+import {
+  useShowConfirmMessageBox,
+  useShowErrorMessageBox,
+} from "../../contexts/MessageBoxContext";
+import { useShowToast } from "../../contexts/ToastContext";
 import type { UserReservation } from "../../models/Reservation";
 import {
   formatDateFromReservation,
@@ -15,10 +19,16 @@ import {
 function MyReservations() {
   const user = useUser();
 
+  const showConfirmMessageBox = useShowConfirmMessageBox();
+  const showToast = useShowToast();
+
   const {
     isLoading,
     isError,
     data: reservations,
+    refetch,
+    isRefetching,
+    isRefetchError,
   } = useQuery<UserReservation[]>({
     queryKey: [FETCH_KEYS.Reservations],
     queryFn: queryFunctionFactory(
@@ -30,14 +40,34 @@ function MyReservations() {
   const showErrorMessageBox = useShowErrorMessageBox();
 
   useEffect(() => {
-    if (isError) {
+    if (isError || isRefetchError) {
       showErrorMessageBox();
     }
-  }, [isError]);
+  }, [isError, isRefetchError]);
+
+  const cancelReservation = (reservationId: number): void => {
+    showConfirmMessageBox(
+      "Potwierdzenie",
+      "Czy na pewno chcesz odwołać rezerwację?",
+      async () => {
+        try {
+          await fetchApi(`${API_URLS.Reservations}/${reservationId}`, {
+            method: "DELETE",
+          });
+
+          showToast("Rezerwacja odwołana pomyślnie.");
+
+          refetch();
+        } catch {
+          showErrorMessageBox();
+        }
+      }
+    );
+  };
 
   return (
     <PageWithBackButton>
-      {isLoading ? (
+      {isLoading || isRefetching ? (
         <div className="text-center">
           <Spinner />
         </div>
@@ -63,13 +93,17 @@ function MyReservations() {
               </thead>
               <tbody>
                 {reservations?.map((reservation, idx) => (
-                  <tr key={idx}>
+                  <tr key={reservation.id}>
                     <td>{idx + 1}</td>
                     <td>{formatDateFromReservation(reservation)}</td>
                     <td>{formatHoursFromReservation(reservation)}</td>
                     <td>{reservation.room_number}</td>
                     <td>
-                      <Button variant="success">Odwołaj</Button>
+                      <Button
+                        variant="success"
+                        onClick={() => cancelReservation(reservation.id)}>
+                        Odwołaj
+                      </Button>
                     </td>
                   </tr>
                 ))}

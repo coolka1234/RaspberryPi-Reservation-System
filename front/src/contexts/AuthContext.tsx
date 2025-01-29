@@ -1,6 +1,9 @@
-import { createContext, PropsWithChildren, useContext, useState } from "react";
+import { createContext, PropsWithChildren, useContext } from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import type { Maybe } from "../models/common";
 import type { User } from "../models/User";
+
+const LOCAL_STORAGE_USER_KEY = "user";
 
 interface AuthContextType {
   user: Maybe<User>;
@@ -10,7 +13,10 @@ interface AuthContextType {
 const AuthContext = createContext<Maybe<AuthContextType>>(null);
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
-  const [user, setUser] = useState<Maybe<User>>(null);
+  const [user, setUser] = useLocalStorage<Maybe<User>>(
+    LOCAL_STORAGE_USER_KEY,
+    null
+  );
 
   return (
     <AuthContext.Provider value={{ user, setUser }}>
