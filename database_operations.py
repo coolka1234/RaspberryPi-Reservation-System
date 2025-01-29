@@ -63,30 +63,6 @@ def drop_database():
     metadata.drop_all(engine)
 
 
-def get_room_by_number(room_number):
-    """Pobierz pokój po ID"""
-    connection = engine.connect()
-    result = connection.execute(
-        table_room.select().where(table_room.c.number == room_number)
-    ).fetchone()
-    connection.close()
-    return result
-
-
-def find_reservation(room_id, user_id, read_time):
-    """Znajdź rezerwację dla użytkownika i pokoju"""
-    connection = engine.connect()
-    result = connection.execute(
-        table_reservation.select()
-        .where(table_reservation.c.fk_user == user_id)
-        .where(table_reservation.c.fk_room == room_id)
-        .where(table_reservation.c.start_date <= read_time)
-        .where(table_reservation.c.end_date >= read_time)
-    ).fetchone()
-    connection.close()
-    return result
-
-
 def handle_card_read(card_id, read_time, room_id):
     """Obsłuż odczyt karty, utwórz rezerwację na podstawie odczytu"""
     connection = engine.connect()
@@ -135,33 +111,6 @@ def handle_card_read(card_id, read_time, room_id):
             connection.commit()
             connection.close()
             return True
-
-
-def create_reservation(
-    fk_user, fk_room, start_date, end_date, is_realized=0, is_finalized=0
-):
-    """Utwórz rezerwację"""
-    connection = engine.connect()
-    connection.execute(
-        table_reservation.insert().values(
-            fk_user=fk_user,
-            fk_room=fk_room,
-            start_date=start_date,
-            end_date=end_date,
-            is_realized=is_realized,
-            is_finalized=is_finalized,
-        )
-    )
-    connection.commit()
-    connection.close()
-
-
-def get_reservations():
-    """Pobierz wszystkie rezerwacje"""
-    connection = engine.connect()
-    result = connection.execute(table_reservation.select()).fetchall()
-    connection.close()
-    return result
 
 
 # USERS
@@ -279,6 +228,17 @@ def get_room_by_id(room_id):
     return result
 
 
+def get_room_by_number(room_number):
+    """Pobierz pokój po ID"""
+
+    connection = engine.connect()
+    result = connection.execute(
+        table_room.select().where(table_room.c.number == room_number)
+    ).fetchone()
+    connection.close()
+    return result
+
+
 def create_room(number, equipment, capacity):
     """Utwórz pokój"""
 
@@ -347,6 +307,15 @@ def delete_room(room_id):
 
 
 # RESERVATIONS
+def get_reservations():
+    """Pobierz wszystkie rezerwacje"""
+
+    connection = engine.connect()
+    result = connection.execute(table_reservation.select()).fetchall()
+    connection.close()
+    return result
+
+
 def find_archived_reservations_for_room(room_id):
     connection = engine.connect()
 
@@ -387,11 +356,69 @@ def find_archived_reservations_for_room(room_id):
     return result
 
 
-def delete_reservation(reservation_id):
-    """Usuń rezerwację"""
+def find_reservations_by_user(user_id):
+    connection = engine.connect()
+
+    formatted_start_date = sql.func.strftime(
+        date_format, table_reservation.c.start_date
+    ).label("start_date")
+    formatted_end_date = sql.func.strftime(
+        date_format, table_reservation.c.end_date
+    ).label("end_date")
+
+    result = connection.execute(
+        select(
+            table_reservation.c.id,
+            formatted_start_date,
+            formatted_end_date,
+            table_room.c.number,
+        )
+        .select_from(
+            table_reservation.outerjoin(
+                table_room, table_reservation.c.fk_room == table_room.c.id
+            )
+        )
+        .where(
+            table_reservation.c.fk_user == user_id,
+            table_reservation.c.end_date > datetime.now(),
+            table_reservation.c.is_realized != 1,
+        )
+        .order_by(table_reservation.c.start_date)
+    ).fetchall()
+    connection.close()
+    return result
+
+
+def find_reservation(room_id, user_id, read_time):
+    """Znajdź rezerwację dla użytkownika i pokoju"""
+
+    connection = engine.connect()
+    result = connection.execute(
+        table_reservation.select()
+        .where(table_reservation.c.fk_user == user_id)
+        .where(table_reservation.c.fk_room == room_id)
+        .where(table_reservation.c.start_date <= read_time)
+        .where(table_reservation.c.end_date >= read_time)
+    ).fetchone()
+    connection.close()
+    return result
+
+
+def create_reservation(
+    fk_user, fk_room, start_date, end_date, is_realized=0, is_finalized=0
+):
+    """Utwórz rezerwację"""
+
     connection = engine.connect()
     connection.execute(
-        table_reservation.delete().where(table_reservation.c.id == reservation_id)
+        table_reservation.insert().values(
+            fk_user=fk_user,
+            fk_room=fk_room,
+            start_date=start_date,
+            end_date=end_date,
+            is_realized=is_realized,
+            is_finalized=is_finalized,
+        )
     )
     connection.commit()
     connection.close()
@@ -406,6 +433,7 @@ def update_reservation(
     is_realized=None,
 ):
     """Zaktualizuj dane rezerwacji"""
+
     connection = engine.connect()
     update_values = {}
     if fk_user is not None:
@@ -438,6 +466,17 @@ def update_reservation(
 
     finally:
         connection.close()  # Ensure connection is closed
+
+
+def delete_reservation(reservation_id):
+    """Usuń rezerwację"""
+
+    connection = engine.connect()
+    connection.execute(
+        table_reservation.delete().where(table_reservation.c.id == reservation_id)
+    )
+    connection.commit()
+    connection.close()
 
 
 if __name__ == "__main__":

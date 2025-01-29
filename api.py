@@ -11,6 +11,7 @@ from database_operations import (
     delete_room,
     find_reservation,
     find_archived_reservations_for_room,
+    find_reservations_by_user,
     get_reservations,
     get_room_by_id,
     get_rooms,
@@ -50,7 +51,14 @@ class UserResource(Resource):
         if user is None:
             return {"error": "Invalid credentials."}, 400
 
-        return jsonify({"name": user.name, "surname": user.surname, "role": user.role})
+        return jsonify(
+            {
+                "id": user.id,
+                "name": user.name,
+                "surname": user.surname,
+                "role": user.role,
+            }
+        )
 
 
 # CRUD ROOMS
@@ -176,48 +184,18 @@ class ReservationResource(Resource):
 
         if room_id is not None:
             reservations = find_archived_reservations_for_room(int(room_id))
+            reservation_dict = [
+                dict(zip(self.columns, reservation)) for reservation in reservations
+            ]
+            return jsonify(reservation_dict)
 
-            if reservations is not None:
-                reservation_dict = [
-                    dict(zip(self.columns, reservation)) for reservation in reservations
-                ]
-                return jsonify(reservation_dict)
-
-            return {"error": "Reservation not found."}, 404
-
-        # if user_id and room_id and read_time:
-        #     try:
-        #         # Convert read_time to datetime
-        #         read_time = datetime.fromisoformat(read_time)
-
-        #         # Find the reservation using the helper function
-        #         reservation = find_reservation(
-        #             room_id=int(room_id), user_id=int(user_id), read_time=read_time
-        #         )
-
-        #         if reservation:
-        #             # Convert result to dictionary
-        #             columns = [column.name for column in table_reservation.columns]
-        #             reservation_dict = dict(zip(columns, reservation))
-        #             return jsonify(reservation_dict)
-
-        #         return {"error": "Reservation not found."}, 404
-        #     except ValueError:
-        #         return {"error": "Invalid date format for read_time."}, 400
-
-        # # Fetch a single reservation by ID
-        # if reservation_id:
-        #     reservation = next(
-        #         (
-        #             res
-        #             for res in reload_reservations()
-        #             if res["id"] == int(reservation_id)
-        #         ),
-        #         None,
-        #     )
-        #     if reservation:
-        #         return jsonify(reservation)
-        #     return {"error": "Reservation not found."}, 404
+        if user_id is not None:
+            reservations = find_reservations_by_user(int(user_id))
+            reservation_dict = [
+                dict(zip(["id", "start_date", "end_date", "room_number"], reservation))
+                for reservation in reservations
+            ]
+            return jsonify(reservation_dict)
 
         reservations = reload_reservations()
         return jsonify(

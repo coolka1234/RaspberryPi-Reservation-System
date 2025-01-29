@@ -8,6 +8,10 @@ import { API_URLS, FETCH_KEYS } from "../../constants";
 import { useShowErrorMessageBox } from "../../contexts/MessageBoxContext";
 import type { Reservation } from "../../models/Reservation";
 import type { Room } from "../../models/Room";
+import {
+  formatDateFromReservation,
+  formatHoursFromReservation,
+} from "../../utils";
 
 function ArchivedReservations() {
   const { roomId } = useParams();
@@ -40,19 +44,6 @@ function ArchivedReservations() {
     }
   }, [isRoomError, isReservationsError]);
 
-  const formatDate = (reservation: Reservation): string => {
-    const [date] = reservation.start_date.split(" ");
-
-    return date;
-  };
-
-  const formatHours = (reservation: Reservation): string => {
-    const [, startHour] = reservation.start_date.split(" ");
-    const [, endHour] = reservation.end_date.split(" ");
-
-    return `${startHour} - ${endHour}`;
-  };
-
   return (
     <PageWithBackButton>
       {isRoomLoading || isReservationsLoading ? (
@@ -80,8 +71,8 @@ function ArchivedReservations() {
               <tbody>
                 {archivedReservations?.map((reservation, idx) => (
                   <tr key={idx}>
-                    <td>{formatDate(reservation)}</td>
-                    <td>{formatHours(reservation)}</td>
+                    <td>{formatDateFromReservation(reservation)}</td>
+                    <td>{formatHoursFromReservation(reservation)}</td>
                     <td>
                       {reservation.name} {reservation.surname}
                     </td>

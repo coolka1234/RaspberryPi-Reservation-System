@@ -9,3 +9,10 @@ export interface Reservation {
   name: string;
   surname: string;
 }
+
+export interface UserReservation {
+  id: number;
+  start_date: string;
+  end_date: string;
+  room_number: string;
+}
