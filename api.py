@@ -1,17 +1,23 @@
-from flask import Flask, request, jsonify
-from flask_restful import Api, Resource
 from datetime import datetime
+import json
+
+from flask import Flask, jsonify, request
+from flask_restful import Api, Resource
+
 from database_operations import (
-    find_reservation_for_room,
-    get_rooms,
-    create_room,
-    get_reservations,
     create_reservation,
-    get_room_by_id,
-    delete_room,
+    create_room,
     delete_reservation,
-    update_room,
+    delete_room,
+    find_reservation,
+    find_reservations_for_room,
+    get_reservations,
+    get_room_by_id,
+    get_rooms,
+    table_reservation,
+    table_room,
     update_reservation,
+    update_room,
 )
 
 app = Flask(__name__)
@@ -28,28 +34,48 @@ def reload_reservations():
 
 # CRUD ROOMS
 class RoomResource(Resource):
+    columns = [
+        *[column.name for column in table_room.columns],
+        "reservations",
+    ]
+
     def get(self, id=None):
         """Retrieve all rooms."""
-        room_id = request.args.get(
-            "id"
-        )  # Retrieve the 'id' parameter from query string
-        if room_id:
-            room = get_room_by_id(room_id)
+        no_reservations = "[null]"
+
+        if id:
+            room = get_room_by_id(id)
             if room:
-                return room
+                result = dict(zip(self.columns, room))
+                result["reservations"] = json.loads(
+                    "[]"
+                    if result["reservations"] == no_reservations
+                    else result["reservations"]
+                )
+                return result
             return {"error": "Room not found."}, 404
         else:
             rooms = reload_rooms()
-            return rooms
+
+            result = [dict(zip(self.columns, room)) for room in rooms]
+            for row in result:
+                row["reservations"] = json.loads(
+                    "[]"
+                    if row["reservations"] == no_reservations
+                    else row["reservations"]
+                )
+
+            return result
 
     def post(self):
         """Create a new room."""
+
         data = request.get_json()
         number = data.get("number")
         equipment = data.get("equipment")
         capacity = data.get("capacity")
 
-        if any((field is None for field in [number, equipment, capacity])):
+        if number is None or equipment is None or capacity is None:
             return {"error": "Missing required fields."}, 400
 
         create_room(number, equipment, capacity)
@@ -57,8 +83,9 @@ class RoomResource(Resource):
 
     def put(self):
         """Update an existing room."""
+
         data = request.get_json()
-        print("Received data:", data)  # Print the received data for debugging
+        print("Received data:", data)
 
         room_id = data.get("id")
         updated_fields = {
@@ -73,67 +100,76 @@ class RoomResource(Resource):
         update_room(room_id, **updated_fields)
         return {"message": "Room updated successfully."}, 200
 
-    def delete(self):
+    def delete(self, id=None):
         """Delete a room by ID."""
-        data = request.get_json()
-        room_id = data.get("id")
 
-        if not room_id:
+        if not id:
             return {"error": "Room ID is required."}, 400
 
-        delete_room(room_id)
+        delete_room(id)
         return {"message": "Room deleted successfully."}, 200
 
 
 # CRUD RESERVATIONS
 class ReservationResource(Resource):
+    columns = [column.name for column in table_reservation.columns]
+
     def get(self):
         """Retrieve reservations or find a specific reservation."""
-        reservation_id = request.args.get("id")  # Retrieve 'id' from query string
-        user_id = request.args.get("user_id")  # Retrieve 'user_id' from query string
-        room_id = request.args.get("room_id")  # Retrieve 'room_id' from query string
-        read_time = request.args.get(
-            "read_time"
-        )  # Retrieve 'read_time' from query string
 
-        # Check for specific parameters to find a reservation
-        if user_id and room_id and read_time:
-            try:
-                # Convert read_time to datetime
-                read_time = datetime.fromisoformat(read_time)
+        reservation_id = request.args.get("id")
+        user_id = request.args.get("user_id")
+        room_id = request.args.get("room_id")
 
-                # Find the reservation using the helper function
-                reservation = find_reservation(
-                    room_id=int(room_id), user_id=int(user_id), read_time=read_time
-                )
+        if room_id is not None:
+            reservations = find_reservations_for_room(int(room_id))
 
-                if reservation:
-                    # Convert result to dictionary
-                    columns = [column.name for column in table_reservation.columns]
-                    reservation_dict = dict(zip(columns, reservation))
-                    return jsonify(reservation_dict)
+            if reservations is not None:
+                reservation_dict = [
+                    dict(zip(self.columns, reservation)) for reservation in reservations
+                ]
+                return jsonify(reservation_dict)
 
-                return {"error": "Reservation not found."}, 404
-            except ValueError:
-                return {"error": "Invalid date format for read_time."}, 400
-
-        # Fetch a single reservation by ID
-        if reservation_id:
-            reservation = next(
-                (
-                    res
-                    for res in reload_reservations()
-                    if res["id"] == int(reservation_id)
-                ),
-                None,
-            )
-            if reservation:
-                return jsonify(reservation)
             return {"error": "Reservation not found."}, 404
 
-        # Fetch all reservations if no specific parameter is provided
+        # if user_id and room_id and read_time:
+        #     try:
+        #         # Convert read_time to datetime
+        #         read_time = datetime.fromisoformat(read_time)
+
+        #         # Find the reservation using the helper function
+        #         reservation = find_reservation(
+        #             room_id=int(room_id), user_id=int(user_id), read_time=read_time
+        #         )
+
+        #         if reservation:
+        #             # Convert result to dictionary
+        #             columns = [column.name for column in table_reservation.columns]
+        #             reservation_dict = dict(zip(columns, reservation))
+        #             return jsonify(reservation_dict)
+
+        #         return {"error": "Reservation not found."}, 404
+        #     except ValueError:
+        #         return {"error": "Invalid date format for read_time."}, 400
+
+        # # Fetch a single reservation by ID
+        # if reservation_id:
+        #     reservation = next(
+        #         (
+        #             res
+        #             for res in reload_reservations()
+        #             if res["id"] == int(reservation_id)
+        #         ),
+        #         None,
+        #     )
+        #     if reservation:
+        #         return jsonify(reservation)
+        #     return {"error": "Reservation not found."}, 404
+
         reservations = reload_reservations()
-        return jsonify(reservations)
+        return jsonify(
+            [dict(zip(self.columns, reservation)) for reservation in reservations]
+        )
 
     def post(self):
         """Create a new reservation."""
@@ -165,21 +201,19 @@ class ReservationResource(Resource):
         update_reservation(reservation_id, **updated_fields)
         return {"message": "Reservation updated successfully."}, 200
 
-    def delete(self):
+    def delete(self, id=None):
         """Delete a reservation by ID."""
-        data = request.get_json()
-        reservation_id = data.get("id")
 
-        if not reservation_id:
+        if not id:
             return {"error": "Reservation ID is required."}, 400
 
-        delete_reservation(reservation_id)
+        delete_reservation(id)
         return {"message": "Reservation deleted successfully."}, 200
 
 
 # ADDING RESOURCES TO API
-api.add_resource(RoomResource, "/rooms", "/rooms/<int:id>")
-api.add_resource(ReservationResource, "/reservations", "/reservations/<int:room_id>")
+api.add_resource(RoomResource, "/rooms", "/rooms/<id>")
+api.add_resource(ReservationResource, "/reservations")
 
 if __name__ == "__main__":
     app.run(debug=True)

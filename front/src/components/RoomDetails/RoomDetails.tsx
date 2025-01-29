@@ -11,7 +11,9 @@ import {
 } from "../../contexts/MessageBoxContext";
 import { useShowToast } from "../../contexts/ToastContext";
 import type { Maybe } from "../../models/common";
-import type { Room } from "../../models/Room";
+import type { Room, RoomReservation } from "../../models/Room";
+import { USER_ROLE } from "../../models/User";
+import "./RoomDetails.css";
 
 interface RoomDetailsProps extends PropsWithChildren {
   selectedRoom: Maybe<Room>;
@@ -49,6 +51,15 @@ function RoomDetails({ selectedRoom, refetchRooms }: RoomDetailsProps) {
     );
   };
 
+  const formatReservationTime = (reservation: RoomReservation): string => {
+    const [date, startHour] = reservation.start_date.split(" ");
+    const [, endHour] = reservation.end_date.split(" ");
+
+    const [year, month, day] = date.split("-");
+
+    return `${day}.${month}.${year} ${startHour}-${endHour}`;
+  };
+
   return (
     <div className="submain col-4 p-4">
       {selectedRoom != null && (
@@ -60,9 +71,22 @@ function RoomDetails({ selectedRoom, refetchRooms }: RoomDetailsProps) {
             <div>
               <h3>Przyszłe rezerwacje</h3>
               <ul>
-                <li>sss</li>
-                <li>aa</li>
-                <li>bbb</li>
+                {selectedRoom.reservations.length === 0 ? (
+                  <p>Brak.</p>
+                ) : (
+                  selectedRoom.reservations.map((reservation, idx) => (
+                    <li key={idx} className="mb-2">
+                      <p className="reservation-line">
+                        {formatReservationTime(reservation)}
+                      </p>
+                      {user.type === USER_ROLE.Admin && (
+                        <p className="reservation-line">
+                          {reservation.name} {reservation.surname}
+                        </p>
+                      )}
+                    </li>
+                  ))
+                )}
               </ul>
             </div>
             <div>
