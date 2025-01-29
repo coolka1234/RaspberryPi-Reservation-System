@@ -16,8 +16,9 @@ function Rooms({ rooms, selectedRoomId, setSelectedRoomId }: RoomProps) {
         {rooms.map((room) => (
           <RoomBox
             key={room.id}
-            roomId={room.id}
+            roomId={room.id!}
             number={room.number}
+            status={room.status}
             setSelectedRoom={setSelectedRoomId}
             isSelected={room.id === selectedRoomId}
           />

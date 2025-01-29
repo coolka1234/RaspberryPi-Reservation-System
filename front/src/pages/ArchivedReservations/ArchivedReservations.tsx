@@ -1,49 +1,96 @@
-import { useState } from "react";
-import { Table } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { Spinner, Table } from "react-bootstrap";
+import { useQuery } from "react-query";
+import { useParams } from "react-router-dom";
+import { queryFunctionFactory } from "../../api";
 import { PageWithBackButton } from "../../components/PageWithBackButton/PageWithBackButton";
+import { API_URLS, FETCH_KEYS } from "../../constants";
+import { useShowErrorMessageBox } from "../../contexts/MessageBoxContext";
+import type { Reservation } from "../../models/Reservation";
+import type { Room } from "../../models/Room";
 
 function ArchivedReservations() {
-  const { roomNumber } = useParams();
-  const navigate = useNavigate();
+  const { roomId } = useParams();
 
-  const [archivedReservations, setArchivedReservations] = useState([
-    {
-      date: "10.01.2025 10:00-14:00",
-      user: "aaa",
-    },
-    {
-      date: "11.01.2025 10:00-12:00",
-      user: "bbb",
-    },
-  ]);
+  const {
+    isLoading: isRoomLoading,
+    isError: isRoomError,
+    data: room,
+  } = useQuery<Room>({
+    queryKey: [FETCH_KEYS.ArchivedReservationsRoom],
+    queryFn: queryFunctionFactory(`${API_URLS.Rooms}/${roomId}`),
+    enabled: roomId != null,
+  });
 
-  if (roomNumber == null) {
-    navigate("/");
-  }
+  const {
+    isLoading: isReservationsLoading,
+    isError: isReservationsError,
+    data: archivedReservations,
+  } = useQuery<Reservation[]>({
+    queryKey: [FETCH_KEYS.ArchivedReservations],
+    queryFn: queryFunctionFactory(`${API_URLS.Reservations}?room_id=${roomId}`),
+    enabled: roomId != null,
+  });
+
+  const showErrorMessageBox = useShowErrorMessageBox();
+
+  useEffect(() => {
+    if (isRoomError || isReservationsError) {
+      showErrorMessageBox();
+    }
+  }, [isRoomError, isReservationsError]);
+
+  const formatDate = (reservation: Reservation): string => {
+    const [date] = reservation.start_date.split(" ");
+
+    return date;
+  };
+
+  const formatHours = (reservation: Reservation): string => {
+    const [, startHour] = reservation.start_date.split(" ");
+    const [, endHour] = reservation.end_date.split(" ");
+
+    return `${startHour} - ${endHour}`;
+  };
 
   return (
     <PageWithBackButton>
-      <h1>Archiwalne rezerwacje dla sali {roomNumber}</h1>
-      {archivedReservations.length === 0 ? (
-        <p className="mt-5">Nie masz obecnie żadnych rezerwacji.</p>
+      {isRoomLoading || isReservationsLoading ? (
+        <div className="text-center">
+          <Spinner />
+        </div>
       ) : (
-        <Table className="mt-5 text-center align-middle" striped bordered hover>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Użytkownik</th>
-            </tr>
-          </thead>
-          <tbody>
-            {archivedReservations.map((reservation, idx) => (
-              <tr key={idx}>
-                <td>{reservation.date}</td>
-                <td>{reservation.user}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <>
+          <h1>Archiwalne rezerwacje dla sali {room?.number}</h1>
+          {archivedReservations?.length === 0 ? (
+            <p className="mt-5">Nie ma żadnych rezerwacji dla tej sali.</p>
+          ) : (
+            <Table
+              className="mt-5 text-center align-middle"
+              striped
+              bordered
+              hover>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Godziny</th>
+                  <th>Użytkownik</th>
+                </tr>
+              </thead>
+              <tbody>
+                {archivedReservations?.map((reservation, idx) => (
+                  <tr key={idx}>
+                    <td>{formatDate(reservation)}</td>
+                    <td>{formatHours(reservation)}</td>
+                    <td>
+                      {reservation.name} {reservation.surname}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </>
       )}
     </PageWithBackButton>
   );

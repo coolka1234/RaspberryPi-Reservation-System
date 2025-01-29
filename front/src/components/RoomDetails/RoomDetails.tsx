@@ -69,7 +69,7 @@ function RoomDetails({ selectedRoom, refetchRooms }: RoomDetailsProps) {
               <h2>Sala {selectedRoom.number} - szczegóły</h2>
             </div>
             <div>
-              <h3>Przyszłe rezerwacje</h3>
+              <h3>Obecne/przyszłe rezerwacje</h3>
               <ul>
                 {selectedRoom.reservations.length === 0 ? (
                   <p>Brak.</p>

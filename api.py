@@ -10,7 +10,7 @@ from database_operations import (
     delete_reservation,
     delete_room,
     find_reservation,
-    find_reservations_for_room,
+    find_archived_reservations_for_room,
     get_reservations,
     get_room_by_id,
     get_rooms,
@@ -19,6 +19,8 @@ from database_operations import (
     update_reservation,
     update_room,
 )
+
+date_format = "%Y-%m-%d %H:%M"
 
 app = Flask(__name__)
 api = Api(app)
@@ -49,9 +51,24 @@ class RoomResource(Resource):
                 result = dict(zip(self.columns, room))
                 result["reservations"] = json.loads(
                     "[]"
-                    if result["reservations"] == no_reservations
+                    if "reservations" not in result
+                    or result["reservations"] == no_reservations
                     else result["reservations"]
                 )
+
+                status = "free"
+                for reservation in result["reservations"]:
+                    if reservation["is_realized"] and not reservation["is_finalized"]:
+                        status = (
+                            "overtime"
+                            if datetime.strptime(reservation["end_date"], date_format)
+                            < datetime.now()
+                            else "taken"
+                        )
+                        break
+
+                result["status"] = status
+
                 return result
             return {"error": "Room not found."}, 404
         else:
@@ -61,9 +78,23 @@ class RoomResource(Resource):
             for row in result:
                 row["reservations"] = json.loads(
                     "[]"
-                    if row["reservations"] == no_reservations
+                    if "reservations" not in row
+                    or row["reservations"] == no_reservations
                     else row["reservations"]
                 )
+
+                status = "free"
+                for reservation in row["reservations"]:
+                    if reservation["is_realized"] and not reservation["is_finalized"]:
+                        status = (
+                            "overtime"
+                            if datetime.strptime(reservation["end_date"], date_format)
+                            < datetime.now()
+                            else "taken"
+                        )
+                        break
+
+                row["status"] = status
 
             return result
 
@@ -112,17 +143,20 @@ class RoomResource(Resource):
 
 # CRUD RESERVATIONS
 class ReservationResource(Resource):
-    columns = [column.name for column in table_reservation.columns]
+    columns = [
+        *[column.name for column in table_reservation.columns],
+        "name",
+        "surname",
+    ]
 
     def get(self):
         """Retrieve reservations or find a specific reservation."""
 
-        reservation_id = request.args.get("id")
         user_id = request.args.get("user_id")
         room_id = request.args.get("room_id")
 
         if room_id is not None:
-            reservations = find_reservations_for_room(int(room_id))
+            reservations = find_archived_reservations_for_room(int(room_id))
 
             if reservations is not None:
                 reservation_dict = [

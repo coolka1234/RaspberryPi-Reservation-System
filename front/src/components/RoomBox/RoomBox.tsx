@@ -1,11 +1,13 @@
 import type { PropsWithChildren } from "react";
 import type { Maybe } from "../../models/common";
+import type { RoomStatus } from "../../models/Room";
 import { makeClassString } from "../../utils";
 import "./RoomBox.css";
 
 interface RoomBoxProps extends PropsWithChildren {
   roomId: number;
-  number: number;
+  number: string;
+  status: RoomStatus;
   setSelectedRoom: React.Dispatch<React.SetStateAction<Maybe<number>>>;
   isSelected: boolean;
 }
@@ -13,6 +15,7 @@ interface RoomBoxProps extends PropsWithChildren {
 function RoomBox({
   roomId,
   number,
+  status,
   setSelectedRoom,
   isSelected,
 }: RoomBoxProps) {
@@ -20,7 +23,7 @@ function RoomBox({
     <div
       className={makeClassString(
         "room-box",
-        "room-box-free",
+        `room-box-${status}`,
         isSelected && "room-box-selected"
       )}
       onClick={() => setSelectedRoom(roomId)}>

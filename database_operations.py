@@ -14,6 +14,8 @@ from sqlalchemy import (
     sql,
 )
 
+date_format = "%Y-%m-%d %H:%M"
+
 metadata = MetaData()
 engine = create_engine("sqlite:///database.db", echo=True)
 table_reservation = Table(
@@ -144,12 +146,19 @@ def handle_card_read(card_id, read_time, room_id):
             return True
 
 
-def create_reservation(fk_user, fk_room, start_date, end_date):
+def create_reservation(
+    fk_user, fk_room, start_date, end_date, is_realized=0, is_finalized=0
+):
     """Utwórz rezerwację"""
     connection = engine.connect()
     connection.execute(
         table_reservation.insert().values(
-            fk_user=fk_user, fk_room=fk_room, start_date=start_date, end_date=end_date
+            fk_user=fk_user,
+            fk_room=fk_room,
+            start_date=start_date,
+            end_date=end_date,
+            is_realized=is_realized,
+            is_finalized=is_finalized,
         )
     )
     connection.commit()
@@ -182,7 +191,6 @@ def get_rooms():
 
     connection = engine.connect()
 
-    date_format = "%Y-%m-%d %H:%M"
     formatted_start_date = sql.func.strftime(
         date_format, table_reservation.c.start_date
     ).label("start_date")
@@ -195,6 +203,10 @@ def get_rooms():
         formatted_start_date,
         "end_date",
         formatted_end_date,
+        "is_realized",
+        table_reservation.c.is_realized,
+        "is_finalized",
+        table_reservation.c.is_finalized,
         "name",
         table_user.c.name,
         "surname",
@@ -220,7 +232,13 @@ def get_rooms():
                 table_reservation,
                 sql.and_(
                     table_room.c.id == table_reservation.c.fk_room,
-                    table_reservation.c.start_date > datetime.now(),
+                    sql.or_(
+                        table_reservation.c.end_date > datetime.now(),
+                        sql.and_(
+                            table_reservation.c.is_realized == 1,
+                            table_reservation.c.is_finalized == 0,
+                        ),
+                    ),
                 ),
             ).outerjoin(table_user, table_reservation.c.fk_user == table_user.c.id)
         )
@@ -309,11 +327,42 @@ def delete_room(room_id):
 
 
 # RESERVATIONS
-def find_reservations_for_room(room_id):
+def find_archived_reservations_for_room(room_id):
     connection = engine.connect()
+
+    formatted_start_date = sql.func.strftime(
+        date_format, table_reservation.c.start_date
+    ).label("start_date")
+    formatted_end_date = sql.func.strftime(
+        date_format, table_reservation.c.end_date
+    ).label("end_date")
+
     result = connection.execute(
-        table_reservation.select().where(table_reservation.c.fk_room == room_id)
+        select(
+            table_reservation.c.id,
+            table_reservation.c.fk_room,
+            table_reservation.c.fk_user,
+            formatted_start_date.label("start_date"),
+            formatted_end_date.label("end_date"),
+            table_reservation.c.is_realized,
+            table_reservation.c.is_finalized,
+            table_user.c.name,
+            table_user.c.surname,
+        )
+        .select_from(
+            table_reservation.outerjoin(
+                table_user, table_reservation.c.fk_user == table_user.c.id
+            )
+        )
+        .where(
+            sql.and_(
+                table_reservation.c.fk_room == room_id,
+                table_reservation.c.end_date < datetime.now(),
+            )
+        )
+        .order_by(table_reservation.c.start_date, table_reservation.c.end_date)
     ).fetchall()
+
     connection.close()
     return result
 
@@ -377,6 +426,26 @@ if __name__ == "__main__":
     create_user("user", "user", "Jan", "Kowalski", 928285915686)
     create_room(1, "podgrzewane fotele", 20)
     create_room(2, "ekspres do kawy", 5)
+    create_room(3, "rzutnik, drukarka", 3)
+
+    # TAKEN
+    create_reservation(
+        1,
+        2,
+        datetime.now() - timedelta(hours=1),
+        datetime.now() + timedelta(hours=2),
+        1,
+    )
+
+    # OVERTIME
+    create_reservation(
+        1,
+        1,
+        datetime.now() - timedelta(hours=2),
+        datetime.now() - timedelta(hours=1),
+        1,
+    )
+
     create_reservation(
         1,
         1,
@@ -388,4 +457,10 @@ if __name__ == "__main__":
         1,
         datetime.now() + timedelta(days=2),
         datetime.now() + timedelta(days=2, hours=2),
+    )
+    create_reservation(
+        1,
+        2,
+        datetime.now() - timedelta(days=10),
+        datetime.now() - timedelta(days=10) + timedelta(hours=3),
     )
