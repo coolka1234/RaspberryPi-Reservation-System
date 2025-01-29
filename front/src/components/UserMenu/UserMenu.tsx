@@ -12,9 +12,12 @@ function UserMenu() {
   return (
     <div className="d-flex align-items-center">
       <div>
-        Zalogowano jako: <span className="fw-bold">{user?.username}</span>
+        Zalogowano jako:{" "}
+        <span className="fw-bold">
+          {user?.name} {user?.surname}
+        </span>
       </div>
-      {user?.type === USER_ROLE.User && (
+      {user?.role === USER_ROLE.User && (
         <Button
           className="ms-3"
           variant="success"
@@ -22,7 +25,7 @@ function UserMenu() {
           Moje rezerwacje
         </Button>
       )}
-      {user?.type === USER_ROLE.Admin && (
+      {user?.role === USER_ROLE.Admin && (
         <Button
           className="ms-3"
           variant="success"

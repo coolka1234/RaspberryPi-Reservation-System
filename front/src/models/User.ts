@@ -7,6 +7,7 @@ export const USER_ROLE = {
 export type UserRole = ObjectValues<typeof USER_ROLE>;
 
 export interface User {
-  username: string;
-  type: "user" | "admin";
+  name: string;
+  surname: string;
+  role: UserRole;
 }

@@ -15,7 +15,7 @@ function ProtectedRoute({ children, allowedRole }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: pathname }} />;
   }
 
-  if (allowedRole != null && user.type !== allowedRole) {
+  if (allowedRole != null && user.role !== allowedRole) {
     return <Navigate to="/" />;
   }
 

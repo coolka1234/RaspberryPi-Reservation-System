@@ -14,6 +14,7 @@ from database_operations import (
     get_reservations,
     get_room_by_id,
     get_rooms,
+    log_in,
     table_reservation,
     table_room,
     update_reservation,
@@ -32,6 +33,24 @@ def reload_rooms():
 
 def reload_reservations():
     return get_reservations()
+
+
+# USERS
+class UserResource(Resource):
+    def post(self):
+        data = request.get_json()
+        login = data.get("login")
+        password = data.get("password")
+
+        if login is None or password is None:
+            return {"error": "Missing required fields."}, 400
+
+        user = log_in(login, password)
+
+        if user is None:
+            return {"error": "Invalid credentials."}, 400
+
+        return jsonify({"name": user.name, "surname": user.surname, "role": user.role})
 
 
 # CRUD ROOMS
@@ -248,6 +267,7 @@ class ReservationResource(Resource):
 # ADDING RESOURCES TO API
 api.add_resource(RoomResource, "/rooms", "/rooms/<id>")
 api.add_resource(ReservationResource, "/reservations")
+api.add_resource(UserResource, "/users")
 
 if __name__ == "__main__":
     app.run(debug=True)

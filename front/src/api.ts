@@ -6,7 +6,7 @@ export const fetchApi = async (apiUrl: string, options?: RequestInit) => {
   const resp = await fetch(apiUrl, options);
   const res = await resp.json();
 
-  if (res.status && isValidResponse(res.status)) {
+  if (resp.status && !isValidResponse(resp.status)) {
     throw new Error();
   }
 

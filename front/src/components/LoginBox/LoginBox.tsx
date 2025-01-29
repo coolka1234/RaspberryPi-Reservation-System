@@ -3,6 +3,7 @@ import { Button, Form } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useLogIn } from "../../contexts/AuthContext";
 import "./LoginBox.css";
+import { fetchApi } from "../../api";
 
 function LoginBox() {
   const logIn = useLogIn();
@@ -13,24 +14,24 @@ function LoginBox() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string>("");
 
-  const tryLogIn = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const tryLogIn = async (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ): Promise<void> => {
     event.preventDefault();
 
     const goBackPath = from ?? "/";
 
-    if (email === "a@a.com" && password === "password") {
-      logIn({ username: "aaa", type: "user" });
+    try {
+      const user = await fetchApi("/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ login: email, password }),
+      });
+      logIn(user);
       navigate(goBackPath);
-      return;
+    } catch {
+      setMessage("Nieprawidłowe dane.");
     }
-
-    if (email === "b@b.com" && password === "password") {
-      logIn({ username: "bbb", type: "admin" });
-      navigate(goBackPath);
-      return;
-    }
-
-    setMessage("Nieprawidłowe dane.");
   };
 
   return (

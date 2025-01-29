@@ -79,7 +79,7 @@ function RoomDetails({ selectedRoom, refetchRooms }: RoomDetailsProps) {
                       <p className="reservation-line">
                         {formatReservationTime(reservation)}
                       </p>
-                      {user.type === USER_ROLE.Admin && (
+                      {user.role === USER_ROLE.Admin && (
                         <p className="reservation-line">
                           {reservation.name} {reservation.surname}
                         </p>
@@ -104,7 +104,7 @@ function RoomDetails({ selectedRoom, refetchRooms }: RoomDetailsProps) {
             </div>
           </div>
           <div className="d-flex flex-column justify-content-center gap-2">
-            {user.type === "user" ? (
+            {user.role === USER_ROLE.User ? (
               <Button
                 variant="success"
                 onClick={() => navigate(`/add-reservation/${selectedRoom.id}`)}>

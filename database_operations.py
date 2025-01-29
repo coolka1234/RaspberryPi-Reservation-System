@@ -48,6 +48,7 @@ table_user = Table(
     Column("password", String),
     Column("name", String),
     Column("surname", String),
+    Column("role", String),
     Column("uid", String),
 )
 
@@ -60,16 +61,6 @@ def create_database():
 def drop_database():
     """Usuń bazę danych"""
     metadata.drop_all(engine)
-
-
-def get_user_by_uid(uid):
-    """Pobierz użytkownika po UID"""
-    connection = engine.connect()
-    result = connection.execute(
-        table_user.select().where(table_user.c.uid == uid)
-    ).fetchone()
-    connection.close()
-    return result
 
 
 def get_room_by_number(room_number):
@@ -173,12 +164,41 @@ def get_reservations():
     return result
 
 
-def create_user(login, password, name, surname, uid):
+# USERS
+def get_user_by_uid(uid):
+    """Pobierz użytkownika po UID"""
+
+    connection = engine.connect()
+    result = connection.execute(
+        table_user.select().where(table_user.c.uid == uid)
+    ).fetchone()
+    connection.close()
+    return result
+
+
+def log_in(login, password):
+    connection = engine.connect()
+    result = connection.execute(
+        table_user.select().where(
+            table_user.c.login == login, table_user.c.password == password
+        )
+    ).fetchone()
+    connection.close()
+    return result
+
+
+def create_user(login, password, name, surname, uid, role="user"):
     """Utwórz użytkownika"""
+
     connection = engine.connect()
     connection.execute(
         table_user.insert().values(
-            login=login, password=password, name=name, surname=surname, uid=uid
+            login=login,
+            password=password,
+            name=name,
+            surname=surname,
+            role=role,
+            uid=uid,
         )
     )
     connection.commit()
@@ -423,7 +443,8 @@ def update_reservation(
 if __name__ == "__main__":
     drop_database()
     create_database()
-    create_user("user", "user", "Jan", "Kowalski", 928285915686)
+    create_user("user@a.pl", "user", "Jan", "Kowalski", 928285915686)
+    create_user("admin@a.pl", "admin", "Janina", "Nowak", 111222, role="admin")
     create_room(1, "podgrzewane fotele", 20)
     create_room(2, "ekspres do kawy", 5)
     create_room(3, "rzutnik, drukarka", 3)
