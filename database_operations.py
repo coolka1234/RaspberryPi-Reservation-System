@@ -1,3 +1,5 @@
+from datetime import timedelta
+from math import e
 from sqlalchemy import (
     Boolean,
     ForeignKey,
@@ -9,11 +11,9 @@ from sqlalchemy import (
     String,
     DateTime,
 )
-from datetime import datetime
 
 metadata = MetaData()
 engine = create_engine("sqlite:///database.db", echo=True)
-
 table_reservation = Table(
     "Reservation",
     metadata,
@@ -23,6 +23,7 @@ table_reservation = Table(
     Column("start_date", DateTime),
     Column("end_date", DateTime),
     Column("is_realized", Boolean, default=False, nullable=False),
+    Column("is_finalized", Boolean, default=False, nullable=False),
 )
 
 table_room = Table(
@@ -67,16 +68,12 @@ def get_user_by_uid(uid):
     return result
 
 
-def get_room_by_id(room_id):
+def get_room_by_number(room_number):
     """Pobierz pokój po ID"""
     connection = engine.connect()
     result = connection.execute(
-        table_room.select().where(table_room.c.id == room_id)
+        table_room.select().where(table_room.c.number == room_number)
     ).fetchone()
-
-    if result is None:
-        return
-
     connection.close()
     columns = [column.name for column in table_room.columns]
     return dict(zip(columns, result))
@@ -115,7 +112,7 @@ def handle_card_read(card_id, read_time, room_id):
         print(f"User with card id {card_id} not found.")
         connection.close()
         return False
-    room = get_room_by_id(room_id)
+    room = get_room_by_number(room_id)
     if room is None:
         print(f"Room with id {room_id} not found.")
         connection.close()
@@ -126,36 +123,43 @@ def handle_card_read(card_id, read_time, room_id):
         connection.close()
         return False
     else:
-        connection.execute(
-            table_reservation.update()
-            .where(table_reservation.c.id == reservation.id)
-            .values(is_realized=True)
-        )
-        connection.commit()
-        connection.close()
-        return True
+        if reservation.is_finalized:
+            print(
+                f"Reservation for user {user.id} and room {room_id} is already finalized."
+            )
+            connection.close()
+            return False
+        elif reservation.is_realized:
+            print(
+                f"Reservation for user {user.id} and room {room_id} is realized. Finalizing it."
+            )
+            connection.execute(
+                table_reservation.update()
+                .where(table_reservation.c.id == reservation.id)
+                .values(is_finalized=True)
+            )
+            connection.close()
+            return True
+        else:
+            print(
+                f"Reservation for user {user.id} and room {room_id} found. Realizing it."
+            )
+            connection.execute(
+                table_reservation.update()
+                .where(table_reservation.c.id == reservation.id)
+                .values(is_realized=True)
+            )
+            connection.commit()
+            connection.close()
+            return True
 
 
 def create_reservation(fk_user, fk_room, start_date, end_date):
     """Utwórz rezerwację"""
     connection = engine.connect()
-    start_date = datetime.fromisoformat(start_date)
-    end_date = datetime.fromisoformat(end_date)
     connection.execute(
         table_reservation.insert().values(
             fk_user=fk_user, fk_room=fk_room, start_date=start_date, end_date=end_date
-        )
-    )
-    connection.commit()
-    connection.close()
-
-
-def create_room(number, equipment, capacity):
-    """Utwórz pokój"""
-    connection = engine.connect()
-    connection.execute(
-        table_room.insert().values(
-            number=number, equipment=equipment, capacity=capacity, is_active=True
         )
     )
     connection.commit()
@@ -167,21 +171,15 @@ def get_reservations():
     connection = engine.connect()
     result = connection.execute(table_reservation.select()).fetchall()
     connection.close()
-    columns = [column.name for column in table_reservation.columns]
-    reservations = [dict(zip(columns, row)) for row in result]
-    return reservations
+    return result
 
 
 def get_rooms():
     """Pobierz wszystkie pokoje"""
     connection = engine.connect()
     result = connection.execute(table_room.select()).fetchall()
-    print(type(result))  # Check what type result is
-    print(result)
     connection.close()
-    columns = [column.name for column in table_room.columns]
-    rooms = [dict(zip(columns, row)) for row in result]
-    return rooms
+    return result
 
 
 def create_user(login, password, name, surname, uid):
@@ -316,5 +314,5 @@ def update_reservation(
 
 
 if __name__ == "__main__":
-    create_database()
-    print("Database created.")
+    create_user("user", "user", "user", "user", 928285915686)
+    print("User created")

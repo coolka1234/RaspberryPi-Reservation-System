@@ -16,6 +16,9 @@ from datetime import datetime
 import paho.mqtt.client as mqtt
 import tkinter
 
+CONNECT_MESSAGE = "Client connected:"
+DISCONNECT_MESSAGE = "Client disconnected:"
+
 is_executing = True
 
 default_terminal_id = "T0"
@@ -53,8 +56,8 @@ def read_rfid():
                 if status == rfid_reader.MI_OK:
                     scan_time = datetime.now()
                     card_uid = sum(uid[i] << (i * 8) for i in range(len(uid)))
-                    print(f"Karta: {card_uid}")
-                    print(f"DATETIME: {scan_time}")
+                    print(f"Card UID: {card_uid}")
+                    print(f"Date and time: {scan_time}")
                     print(f"Room ID: {default_terminal_id}")
                     # jedyna zmiana - może ułatwi insercję do bazy
                     notify_worker(card_uid, datetime.timestamp(scan_time), ROOM_ID)
@@ -62,20 +65,21 @@ def read_rfid():
                     blink_led()
                     last_scan_time = datetime.timestamp(datetime.now())
 
+
 def notify_worker(worker_id, scan_time, room_id):
     mqtt_client.publish("worker/card", f"{worker_id} - {scan_time} - {room_id}")
 
 def disconnect_from_mqtt_broker():
-    notify_worker("klient rozlaczony", datetime.now())
+    notify_worker(DISCONNECT_MESSAGE, datetime.now())
     mqtt_client.disconnect()
 
 def connect_to_mqtt_broker():
     mqtt_client.connect(default_broker)
-    notify_worker("podlaczano klienta:", datetime.now())
+    notify_worker(CONNECT_MESSAGE, datetime.now())
 
 
 def main():
-    GPIO.add_event_detect(buttonRed, GPIO.FALLING, callback=handle_button_press, bouncetime=200)
+    # GPIO.add_event_detect(buttonRed, GPIO.FALLING, callback=handle_button_press, bouncetime=200)
     print('Przyloz karte.')
     connect_to_mqtt_broker()
     read_rfid()

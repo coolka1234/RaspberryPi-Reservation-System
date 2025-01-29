@@ -22,6 +22,7 @@ CREATE TABLE Reservation (
     start_date DATETIME NOT NULL,
     end_date DATETIME NOT NULL,
     is_realized BOOLEAN NOT NULL DEFAULT 0,
+    is_finalized BOOLEAN NOT NOT DEFAULT 0,
     FOREIGN KEY (fk_user) REFERENCES User(id) ON DELETE SET NULL,
     FOREIGN KEY (fk_room) REFERENCES Room(id) ON DELETE SET NULL
 );
