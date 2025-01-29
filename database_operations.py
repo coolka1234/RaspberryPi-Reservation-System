@@ -96,6 +96,17 @@ def find_reservation(room_id, user_id, read_time):
     return result
 
 
+def find_reservation_for_room(room_id):
+    connection = engine.connect()
+    result = connection.execute(
+        table_reservation.select().where(table_reservation.c.fk_room == room_id)
+    ).fetchall()
+    connection.close()
+    columns = [column.name for column in table_room.columns]
+    reservations = [dict(zip(columns, row)) for row in result]
+    return reservations
+
+
 def handle_card_read(card_id, read_time, room_id):
     """Obsłuż odczyt karty, utwórz rezerwację na podstawie odczytu"""
     connection = engine.connect()
@@ -156,7 +167,7 @@ def get_reservations():
     connection = engine.connect()
     result = connection.execute(table_reservation.select()).fetchall()
     connection.close()
-    columns = [column.name for column in table_room.columns]
+    columns = [column.name for column in table_reservation.columns]
     reservations = [dict(zip(columns, row)) for row in result]
     return reservations
 

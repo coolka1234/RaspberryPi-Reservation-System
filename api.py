@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_restful import Api, Resource
 from database_operations import (
+    find_reservation_for_room,
     get_rooms,
     create_room,
     get_reservations,
@@ -84,8 +85,12 @@ class RoomResource(Resource):
 
 # CRUD RESERVATIONS
 class ReservationResource(Resource):
-    def get(self):
+    def get(self, room_id=None):
         """Retrieve all reservations."""
+        if room_id is not None:
+            reservations = find_reservation_for_room(room_id)
+            return jsonify(reservations)
+
         reservations = reload_reservations()
         return jsonify(reservations)
 
@@ -133,7 +138,7 @@ class ReservationResource(Resource):
 
 # ADDING RESOURCES TO API
 api.add_resource(RoomResource, "/rooms", "/rooms/<int:id>")
-api.add_resource(ReservationResource, "/reservations")
+api.add_resource(ReservationResource, "/reservations", "/reservations/<int:room_id>")
 
 if __name__ == "__main__":
     app.run(debug=True)
