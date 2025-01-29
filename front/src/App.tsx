@@ -5,6 +5,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
 import { MessageBoxProvider } from "./contexts/MessageBoxContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import { AddReservation } from "./pages/AddReservation/AddReservation";
+import { AddRoom } from "./pages/AddRoom/AddRoom";
 import { AdminPanel } from "./pages/AdminPanel/AdminPanel";
 import { ArchivedReservations } from "./pages/ArchivedReservations/ArchivedReservations";
 import { EditRoom } from "./pages/EditRoom/EditRoom";
@@ -61,7 +62,15 @@ function App() {
               }
             />
             <Route
-              path="/edit-room/:roomId?"
+              path="/add-room"
+              element={
+                <ProtectedRoute allowedRole="admin">
+                  <AddRoom />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/edit-room/:roomId"
               element={
                 <ProtectedRoute allowedRole="admin">
                   <EditRoom />

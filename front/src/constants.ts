@@ -1,4 +1,5 @@
 export const FETCH_KEYS = {
+  Room: "fetchRoom",
   Rooms: "fetchRooms",
 } as const;
 

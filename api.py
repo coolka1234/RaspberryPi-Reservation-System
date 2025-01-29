@@ -1,22 +1,41 @@
 from flask import Flask, request, jsonify
 from flask_restful import Api, Resource
 from database_operations import (
-    get_rooms, create_room, get_reservations, create_reservation, get_user_by_uid, handle_card_read, delete_room, delete_reservation, update_room, update_reservation
+    get_rooms,
+    create_room,
+    get_reservations,
+    create_reservation,
+    get_room_by_id,
+    delete_room,
+    delete_reservation,
+    update_room,
+    update_reservation,
 )
 
 app = Flask(__name__)
 api = Api(app)
 
+
 def reload_rooms():
     return get_rooms()
+
 
 def reload_reservations():
     return get_reservations()
 
-#CRUD ROOMS
+
+# CRUD ROOMS
 class RoomResource(Resource):
-    def get(self):
+    def get(self, id=None):
         """Retrieve all rooms."""
+        if id is not None:
+            room = get_room_by_id(id)
+
+            if room is None:
+                return {"error": f"Room with ID {id} not found."}, 404
+
+            return jsonify(room)
+
         rooms = reload_rooms()
         return jsonify(rooms)
 
@@ -27,7 +46,7 @@ class RoomResource(Resource):
         equipment = data.get("equipment")
         capacity = data.get("capacity")
 
-        if not (number and equipment and capacity):
+        if any((field is None for field in [number, equipment, capacity])):
             return {"error": "Missing required fields."}, 400
 
         create_room(number, equipment, capacity)
@@ -51,7 +70,6 @@ class RoomResource(Resource):
         update_room(room_id, **updated_fields)
         return {"message": "Room updated successfully."}, 200
 
-
     def delete(self):
         """Delete a room by ID."""
         data = request.get_json()
@@ -62,6 +80,7 @@ class RoomResource(Resource):
 
         delete_room(room_id)
         return {"message": "Room deleted successfully."}, 200
+
 
 # CRUD RESERVATIONS
 class ReservationResource(Resource):
@@ -111,8 +130,9 @@ class ReservationResource(Resource):
         delete_reservation(reservation_id)
         return {"message": "Reservation deleted successfully."}, 200
 
-# ADDING RESOURCES TO API 
-api.add_resource(RoomResource, "/rooms")
+
+# ADDING RESOURCES TO API
+api.add_resource(RoomResource, "/rooms", "/rooms/<int:id>")
 api.add_resource(ReservationResource, "/reservations")
 
 if __name__ == "__main__":

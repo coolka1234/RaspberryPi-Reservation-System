@@ -1,7 +1,7 @@
 export interface Room {
-  id: number;
-  number: number;
+  id?: number;
+  number: string;
   capacity: number;
   equipment: string;
-  is_active: boolean;
+  is_active?: boolean;
 }

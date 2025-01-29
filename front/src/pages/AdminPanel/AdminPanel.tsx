@@ -9,7 +9,7 @@ function AdminPanel() {
     <PageWithBackButton>
       <h1>Panel administratora</h1>
       <div className="mt-5">
-        <Button variant="success" onClick={() => navigate("/edit-room")}>
+        <Button variant="success" onClick={() => navigate("/add-room")}>
           Dodaj salę
         </Button>
       </div>
