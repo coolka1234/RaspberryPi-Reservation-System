@@ -1,10 +1,10 @@
 from datetime import datetime
 import json
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from flask_restful import Api, Resource
 
-from database_operations import (
+from backend.database_operations import (
     create_reservation,
     create_room,
     delete_reservation,
@@ -23,7 +23,7 @@ from database_operations import (
 
 date_format = "%Y-%m-%d %H:%M"
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="dist", static_url_path="")
 api = Api(app)
 
 
@@ -250,6 +250,12 @@ class ReservationResource(Resource):
 api.add_resource(RoomResource, "/rooms", "/rooms/<id>")
 api.add_resource(ReservationResource, "/reservations", "/reservations/<id>")
 api.add_resource(UserResource, "/users")
+
+
+@app.errorhandler(Exception)
+def catch_all(_):
+    return send_file("dist/index.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)

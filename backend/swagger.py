@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_restx import Api, Resource, fields  # Importujemy Api i fields
-from database_operations import (
+from backend.database_operations import (
     get_rooms,
     create_room,
     update_room,

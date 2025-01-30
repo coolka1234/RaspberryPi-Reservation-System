@@ -1,5 +1,5 @@
 import json
-from api import app
+from backend.api import app
 
 
 def test_get_rooms():

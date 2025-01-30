@@ -1,11 +1,11 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import { PageWithBackButton } from "../../components/PageWithBackButton/PageWithBackButton";
 import { API_URLS } from "../../constants";
 import { useShowErrorMessageBox } from "../../contexts/MessageBoxContext";
 import { useShowToast } from "../../contexts/ToastContext";
-import type { Room } from "../../models/Room";
-import { useNavigate } from "react-router-dom";
+import type { RoomPayload } from "../../models/Room";
 
 function AddRoom() {
   const showToast = useShowToast();
@@ -33,7 +33,7 @@ function AddRoom() {
       return;
     }
 
-    const payload: Room = {
+    const payload: RoomPayload = {
       number: roomNumber,
       equipment,
       capacity: Number(capacity),

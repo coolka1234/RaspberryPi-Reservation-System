@@ -11,27 +11,32 @@ from mfrc522 import MFRC522
 import time
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-from database_operations import handle_card_read
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
+from backend.database_operations import handle_card_read
 from pc_sender import notify_worker
 import socket
-ip=socket.gethostbyname(socket.gethostname())
+
+ip = socket.gethostbyname(socket.gethostname())
 
 
 TOPIC = "worker/results"
-BROKER = str(ip) #zobaczymy czy działa
+BROKER = str(ip)  # zobaczymy czy działa
 CONNECT_MESSAGE = "Client connected:"
 DISCONNECT_MESSAGE = "Client disconnected:"
 
 client = mqtt.Client()
 
+
 def set_buzzer_state(state):
     GPIO.output(buzzerPin, not state)
+
 
 def activate_buzzer():
     set_buzzer_state(True)
     time.sleep(1)
     set_buzzer_state(False)
+
 
 def blink_led():
     GPIO.output(led1, GPIO.HIGH)
@@ -39,8 +44,9 @@ def blink_led():
     GPIO.output(led1, GPIO.LOW)
     time.sleep(1)
 
+
 def process_message(client, userdata, message):
-    message_decoded = (str(message.payload.decode("utf-8")))
+    message_decoded = str(message.payload.decode("utf-8"))
     result, message_time = message_decoded.split(" - ")
     if result == "True":
         print(f"Worker received the message at {message_time}.")
@@ -53,8 +59,6 @@ def process_message(client, userdata, message):
         activate_buzzer()
 
 
-
-
 def connect_to_broker():
     client.connect(BROKER)
     print("Connected to broker.")
@@ -63,10 +67,12 @@ def connect_to_broker():
     client.subscribe(TOPIC)
     print(f"Subscribed to {TOPIC}")
 
+
 def disconnect_from_broker():
     client.loop_stop()
     client.disconnect()
     print("Disconnected.")
+
 
 def run_receiver():
     connect_to_broker()
