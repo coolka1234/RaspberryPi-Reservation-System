@@ -86,6 +86,7 @@ def handle_card_read(card_id, read_time, room_id):
         elif reservation.is_realized:
             print(f"Reservation for user {user.id} and room {room_id} is realized. Finalizing it.")
             connection.execute(table_reservation.update().where(table_reservation.c.id==reservation.id).values(is_finalized=True))
+            connection.commit()
             connection.close()
             return True
         else:
