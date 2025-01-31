@@ -5,7 +5,7 @@
 ###############################################################################
 
 import time
-from config import *  # pylint: disable=unused-wildcard-import
+# from config import *  # pylint: disable=unused-wildcard-import
 from datetime import datetime
 # disable warning
 import paho.mqtt.client as mqtt
@@ -16,7 +16,7 @@ DISCONNECT_MESSAGE = "Client disconnected:"
 
 
 default_terminal_id = "T0"
-default_broker = "localhost"
+default_broker = "10.108.33.125"
 mqtt_client = mqtt.Client()
 
 
@@ -38,4 +38,5 @@ def main():
     connect_to_mqtt_broker()
 
 if __name__ == "__main__":
+
     main()

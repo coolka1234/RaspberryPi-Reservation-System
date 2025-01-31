@@ -78,6 +78,7 @@ def handle_card_read(card_id, read_time, room_id):
         return False
     reservation = find_reservation(room_id, user.id, read_time)
     if reservation is None:
+        print(f"{card_id} - {read_time} - {room_id}")
         print(f"Reservation not found for user {user.id} and room {room_id}.")
         connection.close()
         return False
@@ -97,6 +98,7 @@ def handle_card_read(card_id, read_time, room_id):
                 .where(table_reservation.c.id == reservation.id)
                 .values(is_finalized=True)
             )
+            connection.commit()
             connection.close()
             return True
         else:
@@ -391,7 +393,7 @@ def find_reservations_by_user(user_id):
 
 def find_reservation(room_id, user_id, read_time):
     """Znajdź rezerwację dla użytkownika i pokoju"""
-
+    print(read_time)
     connection = engine.connect()
     result = connection.execute(
         table_reservation.select()
@@ -401,6 +403,21 @@ def find_reservation(room_id, user_id, read_time):
         .where(table_reservation.c.end_date >= read_time)
     ).fetchone()
     connection.close()
+    return result
+
+def find_newest_reservation(room_id, user_id, read_time):
+    connection = engine.connect()
+    result = connection.execute(
+        table_reservation.select()
+        .where(table_reservation.c.fk_user == user_id)
+        .where(table_reservation.c.fk_room == room_id)
+        .where(table_reservation.c.start_date <= read_time)
+        .where(table_reservation.c.end_date >= read_time)
+        .order_by(table_reservation.c.end_date)
+    ).fetchone()
+    connection.close()
+    if len(result)>1:
+        return result[0]
     return result
 
 
@@ -483,44 +500,48 @@ if __name__ == "__main__":
     drop_database()
     create_database()
     create_user("user@a.pl", "user", "Jan", "Kowalski", 928285915686)
+    create_user("user1@a.pl", "user1", "Jan", "Kowalski", 1022787718182)
+    create_user("user2@a.pl", "user2", "Jan", "Kowalski", 507384896822)
+
+
     create_user("admin@a.pl", "admin", "Janina", "Nowak", 111222, role="admin")
     create_room(1, "podgrzewane fotele", 20)
     create_room(2, "ekspres do kawy", 5)
     create_room(3, "rzutnik, drukarka", 3)
 
     # TAKEN
-    create_reservation(
-        1,
-        2,
-        datetime.now() - timedelta(hours=1),
-        datetime.now() + timedelta(hours=2),
-        1,
-    )
+    # create_reservation(
+    #     1,
+    #     2,
+    #     datetime.now() - timedelta(hours=1),
+    #     datetime.now() + timedelta(hours=2),
+    #     1,
+    # )
 
-    # OVERTIME
-    create_reservation(
-        1,
-        1,
-        datetime.now() - timedelta(hours=2),
-        datetime.now() - timedelta(hours=1),
-        1,
-    )
+    # # OVERTIME
+    # create_reservation(
+    #     1,
+    #     1,
+    #     datetime.now() - timedelta(hours=2),
+    #     datetime.now() - timedelta(hours=1),
+    #     1,
+    # )
 
-    create_reservation(
-        1,
-        1,
-        datetime.now() + timedelta(days=1),
-        datetime.now() + timedelta(days=1, hours=2),
-    )
-    create_reservation(
-        1,
-        1,
-        datetime.now() + timedelta(days=2),
-        datetime.now() + timedelta(days=2, hours=2),
-    )
-    create_reservation(
-        1,
-        2,
-        datetime.now() - timedelta(days=10),
-        datetime.now() - timedelta(days=10) + timedelta(hours=3),
-    )
+    # create_reservation(
+    #     1,
+    #     1,
+    #     datetime.now() + timedelta(days=1),
+    #     datetime.now() + timedelta(days=1, hours=2),
+    # )
+    # create_reservation(
+    #     1,
+    #     1,
+    #     datetime.now() + timedelta(days=2),
+    #     datetime.now() + timedelta(days=2, hours=2),
+    # )
+    # create_reservation(
+    #     1,
+    #     2,
+    #     datetime.now() - timedelta(days=10),
+    #     datetime.now() - timedelta(days=10) + timedelta(hours=3),
+    # )

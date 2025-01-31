@@ -23,7 +23,7 @@ is_executing = True
 
 default_terminal_id = "T0"
 default_broker = "localhost"
-ROOM_ID="10.108.33.125"
+ROOM_ID="1"
 mqtt_client = mqtt.Client()
 
 def handle_button_press(channel):
@@ -60,7 +60,7 @@ def read_rfid():
                     print(f"Date and time: {scan_time}")
                     print(f"Room ID: {default_terminal_id}")
                     # jedyna zmiana - może ułatwi insercję do bazy
-                    notify_worker(card_uid, datetime.timestamp(scan_time), ROOM_ID)
+                    notify_worker(card_uid, datetime(scan_time), ROOM_ID)
                     activate_buzzer()
                     blink_led()
                     last_scan_time = datetime.timestamp(datetime.now())
