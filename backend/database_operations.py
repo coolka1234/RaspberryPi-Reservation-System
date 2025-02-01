@@ -87,6 +87,7 @@ def handle_card_read(card_id, read_time, room_id):
             print(
                 f"Reservation for user {user.id} and room {room_id} is already finalized."
             )
+            connection.commit()
             connection.close()
             return False
         elif reservation.is_realized:
@@ -405,6 +406,7 @@ def find_reservation(room_id, user_id, read_time):
     connection.close()
     return result
 
+
 def find_newest_reservation(room_id, user_id, read_time):
     connection = engine.connect()
     result = connection.execute(
@@ -416,7 +418,7 @@ def find_newest_reservation(room_id, user_id, read_time):
         .order_by(table_reservation.c.end_date)
     ).fetchone()
     connection.close()
-    if len(result)>1:
+    if len(result) > 1:
         return result[0]
     return result
 
@@ -502,7 +504,6 @@ if __name__ == "__main__":
     create_user("user@a.pl", "user", "Jan", "Kowalski", 928285915686)
     create_user("user1@a.pl", "user1", "Jan", "Kowalski", 1022787718182)
     create_user("user2@a.pl", "user2", "Jan", "Kowalski", 507384896822)
-
 
     create_user("admin@a.pl", "admin", "Janina", "Nowak", 111222, role="admin")
     create_room(1, "podgrzewane fotele", 20)
